@@ -61,3 +61,5 @@ _prepare_*
 Thumbs.db
 desktop.ini
 storage/object_store/
+logs/docurapi_worker.log
+logs/docurapi_worker.pid

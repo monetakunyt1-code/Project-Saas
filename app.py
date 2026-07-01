@@ -121,6 +121,22 @@ app = FastAPI(
     version="2.0.0",
 )
 
+# DOCURAPI_POSTGRES_WORKER_API
+from worker_api import (
+    router as
+        _docurapi_worker_router,
+)
+
+if not any(
+    getattr(route, "path", None)
+    == "/api/worker/health"
+    for route in app.routes
+):
+    app.include_router(
+        _docurapi_worker_router
+    )
+
+
 # DOCURAPI_STORAGE_STATUS_DIRECT_REGISTRATION
 from storage_status_api import (
     object_storage_status as
@@ -1169,3 +1185,54 @@ app.include_router(
 )
 
 del _install_file_response_bridge
+
+# DOCURAPI_WORKER_FINAL_RUNTIME_REGISTRATION
+from worker_api import router as _docurapi_worker_runtime_router
+
+_docurapi_worker_runtime_paths = {
+    getattr(route, "path", None)
+    for route in app.routes
+}
+
+if "/api/worker/health" not in _docurapi_worker_runtime_paths:
+    app.include_router(_docurapi_worker_runtime_router)
+
+del _docurapi_worker_runtime_paths
+del _docurapi_worker_runtime_router
+
+# BEGIN DOCURAPI_WORKER_FORCE_REGISTRATION_V5
+from worker_api import router as _docurapi_worker_force_router
+
+_docurapi_worker_force_paths = {
+    getattr(route, "path", None)
+    for route in app.routes
+}
+
+for _docurapi_worker_force_route in (
+    _docurapi_worker_force_router.routes
+):
+    _docurapi_worker_force_path = getattr(
+        _docurapi_worker_force_route,
+        "path",
+        None,
+    )
+
+    if (
+        _docurapi_worker_force_path
+        not in _docurapi_worker_force_paths
+    ):
+        app.router.routes.append(
+            _docurapi_worker_force_route
+        )
+
+        _docurapi_worker_force_paths.add(
+            _docurapi_worker_force_path
+        )
+
+app.openapi_schema = None
+
+del _docurapi_worker_force_router
+del _docurapi_worker_force_paths
+del _docurapi_worker_force_route
+del _docurapi_worker_force_path
+# END DOCURAPI_WORKER_FORCE_REGISTRATION_V5
