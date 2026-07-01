@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
-import sqlite3
+from services import database_adapter as sqlite3
 import threading
 from datetime import datetime, timezone
 from pathlib import Path

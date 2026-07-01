@@ -5,7 +5,7 @@ import json
 import os
 import shutil
 import socket
-import sqlite3
+from services import database_adapter as sqlite3
 import threading
 import time
 from datetime import datetime, timezone

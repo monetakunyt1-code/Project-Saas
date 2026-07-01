@@ -4,7 +4,7 @@ import argparse
 import hashlib
 import importlib
 import json
-import sqlite3
+from services import database_adapter as sqlite3
 import sys
 from collections import Counter
 from datetime import datetime, timezone

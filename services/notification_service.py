@@ -5,7 +5,7 @@ import importlib
 import os
 import secrets
 import smtplib
-import sqlite3
+from services import database_adapter as sqlite3
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from pathlib import Path

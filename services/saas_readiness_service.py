@@ -4,7 +4,7 @@ import html as html_module
 import json
 import os
 import re
-import sqlite3
+from services import database_adapter as sqlite3
 import subprocess
 import sys
 from datetime import datetime, timezone

@@ -5,7 +5,7 @@ import hmac
 import json
 import os
 import secrets
-import sqlite3
+from services import database_adapter as sqlite3
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import uuid4

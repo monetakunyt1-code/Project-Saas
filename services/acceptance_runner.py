@@ -7,7 +7,7 @@ import inspect
 import json
 import py_compile
 import re
-import sqlite3
+from services import database_adapter as sqlite3
 import sys
 import traceback
 from collections import Counter, defaultdict
