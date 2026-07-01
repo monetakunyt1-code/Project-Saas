@@ -121,6 +121,26 @@ app = FastAPI(
     version="2.0.0",
 )
 
+# DOCURAPI_STORAGE_STATUS_DIRECT_REGISTRATION
+from storage_status_api import (
+    object_storage_status as
+        _docurapi_object_storage_status,
+)
+
+if not any(
+    getattr(route, "path", None)
+    == "/api/storage/status"
+    for route in app.routes
+):
+    app.add_api_route(
+        "/api/storage/status",
+        _docurapi_object_storage_status,
+        methods=["GET"],
+        tags=["Object Storage"],
+        name="docurapi_object_storage_status",
+    )
+
+
 
 # DOCURAPI_MIDTRANS_GATEWAY_START
 from midtrans_gateway_api import (
@@ -1128,3 +1148,24 @@ if "/notifications" not in _docurapi_notification_paths:
         _docurapi_notification_router
     )
 
+
+# DOCURAPI_OBJECT_STORAGE_RUNTIME_FINALIZATION
+from services.file_response_bridge import (
+    install_file_response_bridge as
+        _install_file_response_bridge,
+)
+
+from storage_status_api import (
+    router as
+        _docurapi_storage_status_router,
+)
+
+_DOCURAPI_FILE_RESPONSE_PATCHED_MODULES = (
+    _install_file_response_bridge()
+)
+
+app.include_router(
+    _docurapi_storage_status_router
+)
+
+del _install_file_response_bridge

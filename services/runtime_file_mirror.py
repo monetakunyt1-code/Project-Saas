@@ -29,6 +29,10 @@ from services.storage_bridge import (
     is_object_reference,
 )
 
+from services.storage_manifest import (
+    record_mirror,
+)
+
 
 LOGGER = logging.getLogger(
     "docurapi.storage.mirror"
@@ -347,6 +351,22 @@ def mirror_local_file(
         object_key,
         activate=False,
         remove_source=False,
+    )
+
+    record_mirror(
+        local_path=path,
+        object_reference=
+            stored.object_reference,
+        object_key=
+            stored.object_key,
+        field_name=
+            field_name,
+        module_name=
+            module_name,
+        backend=
+            stored.backend,
+        size=
+            stored.size,
     )
 
     LOGGER.info(
