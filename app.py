@@ -1236,3 +1236,25 @@ del _docurapi_worker_force_paths
 del _docurapi_worker_force_route
 del _docurapi_worker_force_path
 # END DOCURAPI_WORKER_FORCE_REGISTRATION_V5
+
+# BEGIN DOCURAPI_QRIS_MANUAL_ROUTES
+from qris_manual_api import router as _docurapi_qris_manual_router
+
+_docurapi_qris_existing_paths = {
+    getattr(route, "path", None)
+    for route in app.routes
+}
+
+for _docurapi_qris_route in _docurapi_qris_manual_router.routes:
+    _docurapi_qris_path = getattr(_docurapi_qris_route, "path", None)
+    if _docurapi_qris_path not in _docurapi_qris_existing_paths:
+        app.router.routes.append(_docurapi_qris_route)
+        _docurapi_qris_existing_paths.add(_docurapi_qris_path)
+
+app.openapi_schema = None
+
+del _docurapi_qris_manual_router
+del _docurapi_qris_existing_paths
+del _docurapi_qris_route
+del _docurapi_qris_path
+# END DOCURAPI_QRIS_MANUAL_ROUTES

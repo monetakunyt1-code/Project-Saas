@@ -336,3 +336,62 @@ def execute_job(
             payload
         )
     )
+
+
+# DOCURAPI_QRIS_MANUAL_POST_APPROVAL_HANDLER
+def handle_qris_manual_post_approval(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    import hashlib
+    import json
+    import re
+
+    from services.storage_bridge import build_object_key, create_storage_bridge
+
+    order_id = str(payload.get("order_id", "unknown-order"))
+    safe_order = re.sub(r"[^A-Za-z0-9._-]+", "-", order_id).strip("-") or "unknown-order"
+    document = {
+        "event": "qris_manual_payment_approved",
+        "payment_id": payload.get("payment_id"),
+        "order_id": order_id,
+        "user_id": payload.get("user_id"),
+        "buyer_email": payload.get("buyer_email"),
+        "product_code": payload.get("product_code"),
+        "amount": payload.get("amount"),
+        "proof_reference": payload.get("proof_reference"),
+        "reviewed_by": payload.get("reviewed_by"),
+        "merchant_name": payload.get("merchant_name"),
+    }
+    content = json.dumps(
+        document,
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str,
+    ).encode("utf-8")
+    filename = safe_order + "-qris-approved.json"
+    key = build_object_key(
+        "payment-events",
+        filename,
+        resource_id=str(payload.get("payment_id") or safe_order),
+    )
+    bridge = create_storage_bridge(enabled=True, preserve_local=False)
+    stored = bridge.persist_bytes(
+        content,
+        key,
+        content_type="application/json; charset=utf-8",
+        activate=True,
+    )
+    return {
+        "ok": True,
+        "event": "qris_manual_payment_approved",
+        "order_id": order_id,
+        "artifact_reference": stored.object_reference,
+        "artifact_filename": filename,
+        "object_key": stored.object_key,
+        "size": stored.size,
+        "sha256": hashlib.sha256(content).hexdigest(),
+    }
+
+
+HANDLERS["billing.qris_manual_post_approval"] = handle_qris_manual_post_approval
