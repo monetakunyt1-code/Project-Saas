@@ -1,18 +1,36 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -Eeuo pipefail
 
-cd /workspaces/Project-Saas
+WORKSPACE_ROOT="$(
+    cd "$(dirname "${BASH_SOURCE[0]}")/.."
+    pwd
+)"
+
+cd "$WORKSPACE_ROOT"
 
 echo "=============================================="
 echo "DOCURAPI CODESPACES AUTOMATIC SETUP"
 echo "=============================================="
+echo "Workspace: $WORKSPACE_ROOT"
 
-python --version
+if command -v python3 >/dev/null 2>&1; then
+    SYSTEM_PYTHON="$(command -v python3)"
+elif command -v python >/dev/null 2>&1; then
+    SYSTEM_PYTHON="$(command -v python)"
+else
+    echo "GAGAL: Python tidak ditemukan."
+    exit 1
+fi
 
-if [ ! -d ".venv" ]; then
-    python -m venv .venv
-    echo "Virtual environment dibuat."
+"$SYSTEM_PYTHON" --version
+
+if [ ! -x ".venv/bin/python" ]; then
+    echo "Membuat virtual environment..."
+
+    rm -rf .venv
+
+    "$SYSTEM_PYTHON" -m venv .venv
 else
     echo "Virtual environment sudah tersedia."
 fi
@@ -33,8 +51,7 @@ fi
 python -m pip install \
     -r requirements.txt
 
-mkdir -p storage
-mkdir -p logs
+mkdir -p storage logs
 
 python -m pip check
 
