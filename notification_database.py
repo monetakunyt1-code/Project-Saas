@@ -689,3 +689,19 @@ def email_is_verified(
 
 
 initialize_notification_database()
+
+
+# DOCURAPI_OBJECT_STORAGE_RUNTIME_MIRROR
+from services.runtime_file_mirror import (
+    install_module_file_mirroring as
+        _install_docurapi_file_mirroring,
+)
+
+_DOCURAPI_STORAGE_MIRRORED_FUNCTIONS = (
+    _install_docurapi_file_mirroring(
+        globals(),
+        module_name=__name__,
+    )
+)
+
+del _install_docurapi_file_mirroring

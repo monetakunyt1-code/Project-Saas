@@ -60,3 +60,4 @@ _prepare_*
 .DS_Store
 Thumbs.db
 desktop.ini
+storage/object_store/
