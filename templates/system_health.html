@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>System Health DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/system_health.css"
+    >
+
+    <script src="/static/security_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="logo">DR</span>
+
+            <span>
+                <small>
+                    DOCUMENT FORMATTING ASSISTANT
+                </small>
+
+                <strong>System Health</strong>
+            </span>
+        </a>
+
+        <nav>
+            <a href="/">Aplikasi</a>
+            <a href="/task-center">Task Center</a>
+            <a href="/workspaces">Workspace</a>
+            <a href="/admin">Admin</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero-card">
+            <div>
+                <p class="eyebrow">
+                    SYSTEM OBSERVABILITY
+                </p>
+
+                <h1>Status Sistem DocuRapi</h1>
+
+                <p>
+                    Pantau database, penyimpanan, request,
+                    error aplikasi, background job, dan backup.
+                </p>
+            </div>
+
+            <div class="hero-actions">
+                <span
+                    id="overall-status"
+                    class="overall-status"
+                >
+                    Memuat...
+                </span>
+
+                <button
+                    id="refresh-system"
+                    type="button"
+                >
+                    Muat Ulang
+                </button>
+            </div>
+        </section>
+
+        <section
+            id="summary-grid"
+            class="summary-grid"
+        ></section>
+
+        <section class="layout">
+            <div>
+                <article class="card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Kesehatan Database</h2>
+
+                            <p>
+                                Pemeriksaan integritas seluruh
+                                database SQLite proyek.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        id="database-health"
+                        class="table-wrapper"
+                    ></div>
+                </article>
+
+                <article class="card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Performa Endpoint</h2>
+
+                            <p>
+                                Statistik request dalam 24 jam.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        id="endpoint-metrics"
+                        class="table-wrapper"
+                    ></div>
+                </article>
+
+                <article class="card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Error Terbaru</h2>
+
+                            <p>
+                                Error yang terekam oleh middleware.
+                            </p>
+                        </div>
+
+                        <label>
+                            <input
+                                id="unresolved-only"
+                                type="checkbox"
+                                checked
+                            >
+
+                            Belum diselesaikan
+                        </label>
+                    </div>
+
+                    <div id="error-list"></div>
+                </article>
+            </div>
+
+            <aside>
+                <article class="card">
+                    <h2>Buat Backup</h2>
+
+                    <form
+                        id="backup-form"
+                        class="form-stack"
+                    >
+                        <label>
+                            <span>Label backup</span>
+
+                            <input
+                                type="text"
+                                name="label"
+                                value="manual"
+                                maxlength="200"
+                            >
+                        </label>
+
+                        <button type="submit">
+                            Buat Backup Sekarang
+                        </button>
+                    </form>
+
+                    <div
+                        id="backup-message"
+                        class="message hidden"
+                    ></div>
+                </article>
+
+                <article class="card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Daftar Backup</h2>
+
+                            <p>
+                                Backup database dan metadata sistem.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="backup-list"></div>
+
+                    <form
+                        id="prune-form"
+                        class="prune-form"
+                    >
+                        <label>
+                            Simpan backup terbaru
+
+                            <input
+                                type="number"
+                                name="keep"
+                                value="14"
+                                min="1"
+                                max="365"
+                            >
+                        </label>
+
+                        <button
+                            type="submit"
+                            class="secondary-button"
+                        >
+                            Bersihkan Backup Lama
+                        </button>
+                    </form>
+                </article>
+
+                <article class="card">
+                    <h2>Background Job</h2>
+
+                    <div id="background-summary"></div>
+                </article>
+            </aside>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/system_health.js"></script>
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

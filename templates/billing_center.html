@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Billing DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/billing_center.css"
+    >
+
+    <script src="/static/security_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="logo">DR</span>
+
+            <span>
+                <small>
+                    DOCUMENT FORMATTING ASSISTANT
+                </small>
+
+                <strong>
+                    Pay-per-Use Billing
+                </strong>
+            </span>
+        </a>
+
+        <nav>
+            <a href="/">Aplikasi</a>
+            <a href="/account">Akun</a>
+            <a href="/notifications">Notifikasi</a>
+            <a href="/admin/billing">Admin Billing</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero-card">
+            <div>
+                <p class="eyebrow">
+                    BAYAR SEKALI, PROSES SEKALI
+                </p>
+
+                <h1>
+                    Tidak Ada Langganan Bulanan
+                </h1>
+
+                <p>
+                    Pilih layanan, bayar satu kali,
+                    lalu gunakan hak pemrosesan
+                    yang diberikan.
+                </p>
+            </div>
+
+            <div class="wallet-card">
+                <span>Saldo kredit</span>
+
+                <strong id="credit-balance">
+                    0
+                </strong>
+
+                <small>
+                    Kredit tidak diperpanjang otomatis
+                </small>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <div class="section-heading">
+                <div>
+                    <h2>Layanan Pemrosesan</h2>
+
+                    <p>
+                        Pembayaran langsung per dokumen.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                id="processing-products"
+                class="product-grid"
+            >
+                <div class="empty-state">
+                    Memuat katalog...
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <div class="section-heading">
+                <div>
+                    <h2>Paket Kredit Sekali Bayar</h2>
+
+                    <p>
+                        Beli kredit tanpa perpanjangan otomatis.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                id="credit-products"
+                class="product-grid"
+            ></div>
+        </section>
+
+        <section class="summary-layout">
+            <article class="section-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Hak Pemrosesan</h2>
+
+                        <p>
+                            Hak yang tersedia setelah pembayaran.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="entitlement-list">
+                    <div class="empty-state">
+                        Memuat hak pemrosesan...
+                    </div>
+                </div>
+            </article>
+
+            <article class="section-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Riwayat Transaksi</h2>
+
+                        <p>
+                            Semua pesanan pay-per-use.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="order-list">
+                    <div class="empty-state">
+                        Memuat transaksi...
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <div
+        id="loading-overlay"
+        class="loading-overlay hidden"
+    >
+        <div class="loading-card">
+            <div class="spinner"></div>
+
+            <h2>Memproses transaksi</h2>
+
+            <p>
+                Mohon tunggu sebentar.
+            </p>
+        </div>
+    </div>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/billing_center.js"></script>
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+    <script src="/static/midtrans_checkout.js"></script>
+</body>
+</html>

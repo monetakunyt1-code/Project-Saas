@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Portal DocuRapi</title>
+    <link
+        rel="stylesheet"
+        href="/static/saas_portal.css"
+    >
+    <script src="/static/security_client.js"></script>
+    <script src="/static/background_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="logo">DR</span>
+            <span>
+                <small>DOCUMENT FORMATTING ASSISTANT</small>
+                <strong>DocuRapi</strong>
+            </span>
+        </a>
+
+        <nav>
+            <a href="/">Aplikasi</a>
+            <a href="/pricing">Harga</a>
+            <a href="/account">Akun</a>
+            <a
+                id="admin-link"
+                class="hidden"
+                href="/admin"
+            >
+                Admin
+            </a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section id="login-view" class="view">
+            <article class="auth-card">
+                <p class="eyebrow">MASUK</p>
+                <h1>Selamat datang kembali</h1>
+
+                <form id="login-form">
+                    <label>
+                        Email
+                        <input
+                            type="email"
+                            name="email"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        Kata sandi
+                        <input
+                            type="password"
+                            name="password"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Masuk
+                    </button>
+                </form>
+
+                <p>
+                    Belum memiliki akun?
+                    <a href="/register">Daftar</a>
+                </p>
+
+                <div
+                    id="login-message"
+                    class="message hidden"
+                ></div>
+            </article>
+        </section>
+
+        <section id="register-view" class="view">
+            <article class="auth-card">
+                <p class="eyebrow">DAFTAR</p>
+                <h1>Buat akun DocuRapi</h1>
+
+                <form id="register-form">
+                    <label>
+                        Nama
+                        <input
+                            type="text"
+                            name="display_name"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        Email
+                        <input
+                            type="email"
+                            name="email"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        Kata sandi
+                        <input
+                            type="password"
+                            name="password"
+                            minlength="8"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Buat Akun
+                    </button>
+                </form>
+
+                <p>
+                    Sudah memiliki akun?
+                    <a href="/login">Masuk</a>
+                </p>
+
+                <div
+                    id="register-message"
+                    class="message hidden"
+                ></div>
+            </article>
+        </section>
+
+        <section id="pricing-view" class="view">
+            <header class="page-heading">
+                <p class="eyebrow">PAKET LAYANAN</p>
+                <h1>Pilih paket DocuRapi</h1>
+                <p>
+                    Pembayaran pada versi lokal masih berupa
+                    simulasi.
+                </p>
+            </header>
+
+            <div
+                id="pricing-grid"
+                class="pricing-grid"
+            ></div>
+        </section>
+
+        <section id="account-view" class="view">
+            <header class="page-heading">
+                <p class="eyebrow">AKUN</p>
+                <h1>Ringkasan penggunaan</h1>
+            </header>
+
+            <div
+                id="account-grid"
+                class="dashboard-grid"
+            ></div>
+
+            <button
+                id="logout-button"
+                class="danger-button"
+                type="button"
+            >
+                Keluar
+            </button>
+        </section>
+
+        <section id="admin-view" class="view">
+            <header class="page-heading">
+                <p class="eyebrow">ADMINISTRATOR</p>
+                <h1>Pengelolaan pengguna</h1>
+            </header>
+
+            <article class="card">
+                <div class="section-heading">
+                    <h2>Daftar Pengguna</h2>
+
+                    <button
+                        id="refresh-admin"
+                        type="button"
+                    >
+                        Muat Ulang
+                    </button>
+                </div>
+
+                <div
+                    id="admin-users"
+                    class="table-wrapper"
+                ></div>
+            </article>
+
+            <article class="card">
+                <h2>Pembayaran Simulasi</h2>
+
+                <div
+                    id="admin-payments"
+                    class="table-wrapper"
+                ></div>
+            </article>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/saas_portal.js"></script>
+
+    <a
+        class="security-center-launch"
+        href="/security-center"
+    >
+        Security Center
+    </a>
+
+
+    <a
+        class="workspace-launch"
+        href="/workspaces"
+    >
+        Workspace
+    </a>
+
+
+    <a
+        class="task-center-launch"
+        href="/task-center"
+    >
+        Task Center
+    </a>
+
+
+    <a
+        class="system-health-launch"
+        href="/system-health"
+    >
+        System Health
+    </a>
+
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

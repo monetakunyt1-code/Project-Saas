@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>DocuRapi</title>
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+    <script src="/static/security_client.js"></script>
+    <script src="/static/background_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="brand">
+                <div class="logo">DR</div>
+
+                <div>
+                    <p class="eyebrow">
+                        DOCUMENT FORMATTING ASSISTANT
+                    </p>
+
+                    <h1>DocuRapi</h1>
+                </div>
+            </div>
+
+            <div class="hero-copy">
+                <h2>
+                    Rapikan dokumen akademik secara otomatis
+                </h2>
+
+                <p>
+                    Format skripsi, analisis struktur Word,
+                    buat draft jurnal, dan gunakan template
+                    institusi Anda.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="tabs">
+            <button
+                class="tab active"
+                data-tab="process"
+            >
+                Proses Dokumen
+            </button>
+
+            <button
+                class="tab"
+                data-tab="templates"
+            >
+                Template Khusus
+            </button>
+
+            <button
+                class="tab"
+                data-tab="history"
+            >
+                Riwayat
+            </button>
+        </nav>
+
+        <section
+            id="tab-process"
+            class="tab-panel active"
+        >
+            <form id="process-form">
+                <article class="card">
+                    <div class="step-title">
+                        <span>1</span>
+
+                        <div>
+                            <h3>Unggah dokumen</h3>
+                            <p>
+                                Gunakan file Microsoft Word
+                                berformat .docx, maksimal 20 MB.
+                            </p>
+                        </div>
+                    </div>
+
+                    <label
+                        id="drop-zone"
+                        class="drop-zone"
+                    >
+                        <input
+                            id="document-file"
+                            name="file"
+                            type="file"
+                            accept=".docx"
+                            hidden
+                            required
+                        >
+
+                        <div class="upload-icon">⇧</div>
+
+                        <strong>
+                            Tarik dokumen ke sini
+                        </strong>
+
+                        <span>
+                            atau klik untuk memilih file
+                        </span>
+
+                        <p id="file-name">
+                            Belum ada file dipilih
+                        </p>
+                    </label>
+                </article>
+
+                <article class="card">
+                    <div class="step-title">
+                        <span>2</span>
+
+                        <div>
+                            <h3>Pilih mode</h3>
+                            <p>
+                                Tentukan proses yang akan
+                                dilakukan terhadap dokumen.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="option-grid">
+                        <label class="option-card selected">
+                            <input
+                                type="radio"
+                                name="mode"
+                                value="format"
+                                checked
+                            >
+
+                            <strong>Rapikan format</strong>
+
+                            <small>
+                                Margin, font, spasi, heading,
+                                tabel, daftar, dan halaman.
+                            </small>
+                        </label>
+
+                        <label class="option-card">
+                            <input
+                                type="radio"
+                                name="mode"
+                                value="analyze"
+                            >
+
+                            <strong>Analisis saja</strong>
+
+                            <small>
+                                Memeriksa struktur dan masalah
+                                format tanpa mengubah isi.
+                            </small>
+                        </label>
+
+                        <label class="option-card">
+                            <input
+                                type="radio"
+                                name="mode"
+                                value="journal"
+                            >
+
+                            <strong>Draft jurnal</strong>
+
+                            <small>
+                                Memetakan Bab I–V ke struktur
+                                artikel ilmiah.
+                            </small>
+                        </label>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="step-title">
+                        <span>3</span>
+
+                        <div>
+                            <h3>Pilih preset</h3>
+                            <p>
+                                Pilih format dasar atau template
+                                khusus yang telah diunggah.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <label>
+                            <span>Preset bawaan</span>
+
+                            <select
+                                id="preset"
+                                name="preset"
+                            >
+                                <option value="skripsi">
+                                    Skripsi
+                                </option>
+
+                                <option value="laporan">
+                                    Laporan
+                                </option>
+
+                                <option value="jurnal">
+                                    Jurnal
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Template khusus</span>
+
+                            <select
+                                id="template-select"
+                                name="template_id"
+                            >
+                                <option value="">
+                                    Tidak menggunakan template khusus
+                                </option>
+                            </select>
+                        </label>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="step-title">
+                        <span>4</span>
+
+                        <div>
+                            <h3>Daftar dan halaman otomatis</h3>
+                            <p>
+                                Pilihan ini digunakan pada mode
+                                Rapikan Format.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="check-grid">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_toc"
+                                checked
+                            >
+                            Daftar isi otomatis
+                        </label>
+
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_table_list"
+                                checked
+                            >
+                            Daftar tabel
+                        </label>
+
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_figure_list"
+                                checked
+                            >
+                            Daftar gambar
+                        </label>
+
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_appendix_list"
+                                checked
+                            >
+                            Daftar lampiran
+                        </label>
+
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_page_numbers"
+                                checked
+                            >
+                            Nomor halaman otomatis
+                        </label>
+                    </div>
+                </article>
+
+                <button
+                    id="process-button"
+                    class="primary-button"
+                    type="submit"
+                >
+                    Proses Dokumen
+                </button>
+            </form>
+
+            <section
+                id="process-result"
+                class="result-card hidden"
+            ></section>
+        </section>
+
+        <section
+            id="tab-templates"
+            class="tab-panel"
+        >
+            <article class="card">
+                <div class="step-title">
+                    <span>T</span>
+
+                    <div>
+                        <h3>Unggah template institusi</h3>
+                        <p>
+                            DocuRapi membaca margin, font,
+                            ukuran tulisan, dan style utama
+                            dari template Word.
+                        </p>
+                    </div>
+                </div>
+
+                <form
+                    id="template-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Nama template</span>
+
+                        <input
+                            type="text"
+                            name="template_name"
+                            placeholder="Contoh: Skripsi Universitas A"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Nama institusi</span>
+
+                        <input
+                            type="text"
+                            name="institution_name"
+                            placeholder="Nama kampus atau jurnal"
+                        >
+                    </label>
+
+                    <label>
+                        <span>Jenis dokumen</span>
+
+                        <select name="document_type">
+                            <option value="skripsi">
+                                Skripsi
+                            </option>
+
+                            <option value="laporan">
+                                Laporan
+                            </option>
+
+                            <option value="jurnal">
+                                Jurnal
+                            </option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>File template .docx</span>
+
+                        <input
+                            type="file"
+                            name="file"
+                            accept=".docx"
+                            required
+                        >
+                    </label>
+
+                    <button
+                        class="primary-button"
+                        type="submit"
+                    >
+                        Simpan Template
+                    </button>
+                </form>
+
+                <div
+                    id="template-message"
+                    class="message hidden"
+                ></div>
+            </article>
+
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h3>Template tersimpan</h3>
+                        <p>
+                            Template dapat dipilih saat
+                            memproses dokumen.
+                        </p>
+                    </div>
+
+                    <button
+                        id="refresh-templates"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Muat ulang
+                    </button>
+                </div>
+
+                <div id="template-list"></div>
+            </article>
+        </section>
+
+        <section
+            id="tab-history"
+            class="tab-panel"
+        >
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h3>Riwayat pemrosesan</h3>
+                        <p>
+                            Unduh ulang hasil atau laporan
+                            analisis dokumen.
+                        </p>
+                    </div>
+
+                    <div class="button-group">
+                        <button
+                            id="refresh-history"
+                            class="secondary-button"
+                            type="button"
+                        >
+                            Muat ulang
+                        </button>
+
+                        <button
+                            id="clear-history"
+                            class="danger-button"
+                            type="button"
+                        >
+                            Hapus semua
+                        </button>
+                    </div>
+                </div>
+
+                <div id="history-list"></div>
+            </article>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/app.js"></script>
+
+    <a
+        class="advanced-launch"
+        href="/advanced"
+    >
+        Buka Fitur Lanjutan
+    </a>
+
+
+    <a
+        class="academic-launch"
+        href="/audit"
+    >
+        Audit Akademik
+    </a>
+
+
+    <a
+        class="journal-studio-launch"
+        href="/journal-studio"
+    >
+        Journal Studio
+    </a>
+
+
+    <a
+        class="security-center-launch"
+        href="/security-center"
+    >
+        Security Center
+    </a>
+
+
+    <a
+        class="workspace-launch"
+        href="/workspaces"
+    >
+        Workspace
+    </a>
+
+
+    <a
+        class="task-center-launch"
+        href="/task-center"
+    >
+        Task Center
+    </a>
+
+
+    <a
+        class="system-health-launch"
+        href="/system-health"
+    >
+        System Health
+    </a>
+
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Security Center DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/security_center.css"
+    >
+
+    <script src="/static/security_client.js"></script>
+    <script src="/static/background_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="logo">DR</span>
+
+            <span>
+                <small>
+                    DOCUMENT FORMATTING ASSISTANT
+                </small>
+
+                <strong>Security Center</strong>
+            </span>
+        </a>
+
+        <nav>
+            <a href="/">Aplikasi</a>
+            <a href="/account">Akun</a>
+            <a href="/pricing">Paket</a>
+            <a
+                id="admin-link"
+                class="hidden"
+                href="/admin"
+            >
+                Admin
+            </a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <nav class="tabs">
+            <button
+                class="tab active"
+                data-panel="password"
+                type="button"
+            >
+                Kata Sandi
+            </button>
+
+            <button
+                class="tab"
+                data-panel="privacy"
+                type="button"
+            >
+                Privasi
+            </button>
+
+            <button
+                class="tab"
+                data-panel="data"
+                type="button"
+            >
+                Data Akun
+            </button>
+
+            <button
+                id="admin-tab"
+                class="tab hidden"
+                data-panel="admin"
+                type="button"
+            >
+                Keamanan Admin
+            </button>
+        </nav>
+
+        <section
+            id="panel-password"
+            class="panel active"
+        >
+            <article class="card">
+                <h1>Ubah Kata Sandi</h1>
+
+                <p class="description">
+                    Seluruh sesi akan dikeluarkan setelah
+                    kata sandi berhasil diubah.
+                </p>
+
+                <form
+                    id="change-password-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Kata sandi saat ini</span>
+
+                        <input
+                            type="password"
+                            name="current_password"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Kata sandi baru</span>
+
+                        <input
+                            type="password"
+                            name="new_password"
+                            minlength="8"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Ubah Kata Sandi
+                    </button>
+                </form>
+
+                <div
+                    id="change-password-message"
+                    class="message hidden"
+                ></div>
+            </article>
+
+            <article class="card">
+                <h2>Reset Kata Sandi</h2>
+
+                <p class="description">
+                    Pada mode pengembangan lokal, token reset
+                    ditampilkan langsung. Pada deployment produksi,
+                    token harus dikirim melalui email.
+                </p>
+
+                <form
+                    id="request-reset-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Email akun</span>
+
+                        <input
+                            type="email"
+                            name="email"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Buat Token Reset
+                    </button>
+                </form>
+
+                <div
+                    id="reset-token-result"
+                    class="message hidden"
+                ></div>
+
+                <form
+                    id="confirm-reset-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Token reset</span>
+
+                        <input
+                            type="text"
+                            name="token"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Kata sandi baru</span>
+
+                        <input
+                            type="password"
+                            name="new_password"
+                            minlength="8"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Konfirmasi Reset
+                    </button>
+                </form>
+
+                <div
+                    id="confirm-reset-message"
+                    class="message hidden"
+                ></div>
+            </article>
+        </section>
+
+        <section
+            id="panel-privacy"
+            class="panel"
+        >
+            <article class="card">
+                <h1>Pengaturan Privasi</h1>
+
+                <p class="description">
+                    Atur berapa lama dokumen tersimpan dan apakah
+                    data penggunaan anonim boleh dicatat.
+                </p>
+
+                <form
+                    id="privacy-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Masa retensi dokumen</span>
+
+                        <select name="retention_days">
+                            <option value="7">
+                                7 hari
+                            </option>
+
+                            <option value="14">
+                                14 hari
+                            </option>
+
+                            <option value="30">
+                                30 hari
+                            </option>
+
+                            <option value="60">
+                                60 hari
+                            </option>
+
+                            <option value="90">
+                                90 hari
+                            </option>
+
+                            <option value="365">
+                                1 tahun
+                            </option>
+                        </select>
+                    </label>
+
+                    <label class="checkbox-label">
+                        <input
+                            type="checkbox"
+                            name="analytics_enabled"
+                        >
+
+                        Izinkan pencatatan analitik penggunaan anonim
+                    </label>
+
+                    <button type="submit">
+                        Simpan Pengaturan
+                    </button>
+                </form>
+
+                <div
+                    id="privacy-message"
+                    class="message hidden"
+                ></div>
+            </article>
+        </section>
+
+        <section
+            id="panel-data"
+            class="panel"
+        >
+            <article class="card">
+                <h1>Ekspor Data Akun</h1>
+
+                <p class="description">
+                    Unduh data identitas, paket, kuota, pembayaran,
+                    privasi, dan aktivitas akun dalam format JSON.
+                </p>
+
+                <a
+                    class="action-link"
+                    href="/api/security/account/export"
+                >
+                    Unduh Data Akun
+                </a>
+            </article>
+
+            <article class="card danger-card">
+                <h2>Hapus Akun</h2>
+
+                <p>
+                    Tindakan ini menghapus akun, sesi, paket,
+                    pembayaran, dan penggunaan dari database lokal.
+                    Tindakan tidak dapat dibatalkan.
+                </p>
+
+                <form
+                    id="delete-account-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Kata sandi</span>
+
+                        <input
+                            type="password"
+                            name="password"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Ketik HAPUS</span>
+
+                        <input
+                            type="text"
+                            name="confirmation"
+                            required
+                        >
+                    </label>
+
+                    <button
+                        class="danger-button"
+                        type="submit"
+                    >
+                        Hapus Akun Secara Permanen
+                    </button>
+                </form>
+
+                <div
+                    id="delete-account-message"
+                    class="message hidden"
+                ></div>
+            </article>
+        </section>
+
+        <section
+            id="panel-admin"
+            class="panel"
+        >
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h1>Log Aktivitas</h1>
+
+                        <p class="description">
+                            Aktivitas perubahan data, autentikasi,
+                            dan operasi administrator.
+                        </p>
+                    </div>
+
+                    <button
+                        id="refresh-audit"
+                        type="button"
+                    >
+                        Muat Ulang
+                    </button>
+                </div>
+
+                <div
+                    id="audit-events"
+                    class="table-wrapper"
+                ></div>
+            </article>
+
+            <article class="card">
+                <h2>Retensi Data Sistem</h2>
+
+                <form
+                    id="retention-form"
+                    class="retention-form"
+                >
+                    <label>
+                        <span>Hapus data lebih lama dari</span>
+
+                        <select name="retention_days">
+                            <option value="7">7 hari</option>
+                            <option value="14">14 hari</option>
+                            <option value="30" selected>
+                                30 hari
+                            </option>
+                            <option value="60">60 hari</option>
+                            <option value="90">90 hari</option>
+                            <option value="365">
+                                1 tahun
+                            </option>
+                        </select>
+                    </label>
+
+                    <button
+                        id="preview-retention"
+                        type="button"
+                    >
+                        Pratinjau
+                    </button>
+
+                    <button
+                        class="danger-button"
+                        type="submit"
+                    >
+                        Jalankan Pembersihan
+                    </button>
+                </form>
+
+                <div
+                    id="retention-result"
+                    class="message hidden"
+                ></div>
+            </article>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/security_center.js"></script>
+
+    <a
+        class="workspace-launch"
+        href="/workspaces"
+    >
+        Workspace
+    </a>
+
+
+    <a
+        class="task-center-launch"
+        href="/task-center"
+    >
+        Task Center
+    </a>
+
+
+    <a
+        class="system-health-launch"
+        href="/system-health"
+    >
+        System Health
+    </a>
+
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

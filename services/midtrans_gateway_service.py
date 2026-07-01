@@ -1,0 +1,935 @@
+
+from __future__ import annotations
+
+import base64
+import hashlib
+import hmac
+import json
+import os
+import ssl
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
+from typing import Any
+from uuid import uuid4
+
+from billing_database import connect, initialize_billing_database
+from services.billing_service import complete_order_payment, get_order
+
+
+def utc_now_text() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def midtrans_environment() -> str:
+    value = os.getenv("DOCURAPI_MIDTRANS_ENV", "sandbox").strip().lower()
+    return "production" if value == "production" else "sandbox"
+
+
+def payment_mode() -> str:
+    return os.getenv("DOCURAPI_PAYMENT_MODE", "simulation").strip().lower()
+
+
+def server_key() -> str:
+    return os.getenv("DOCURAPI_MIDTRANS_SERVER_KEY", "").strip()
+
+
+def client_key() -> str:
+    return os.getenv("DOCURAPI_MIDTRANS_CLIENT_KEY", "").strip()
+
+
+def public_base_url() -> str:
+    return os.getenv(
+        "DOCURAPI_PUBLIC_BASE_URL",
+        "http://127.0.0.1:8000",
+    ).rstrip("/")
+
+
+def is_configured() -> bool:
+    return bool(server_key() and client_key())
+
+
+def snap_transaction_url() -> str:
+    if midtrans_environment() == "production":
+        return "https://app.midtrans.com/snap/v1/transactions"
+    return "https://app.sandbox.midtrans.com/snap/v1/transactions"
+
+
+def snap_js_url() -> str:
+    if midtrans_environment() == "production":
+        return "https://app.midtrans.com/snap/snap.js"
+    return "https://app.sandbox.midtrans.com/snap/snap.js"
+
+
+def status_url(provider_order_id: str) -> str:
+    encoded = urllib.parse.quote(provider_order_id, safe="")
+    if midtrans_environment() == "production":
+        return f"https://api.midtrans.com/v2/{encoded}/status"
+    return f"https://api.sandbox.midtrans.com/v2/{encoded}/status"
+
+
+def initialize_midtrans_database() -> None:
+    initialize_billing_database()
+
+    with connect() as connection:
+        connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS billing_gateway_transactions (
+                gateway_transaction_id TEXT PRIMARY KEY,
+                provider TEXT NOT NULL,
+                internal_order_id TEXT NOT NULL UNIQUE,
+                provider_order_id TEXT NOT NULL UNIQUE,
+                snap_token TEXT,
+                redirect_url TEXT,
+                provider_transaction_id TEXT,
+                status TEXT NOT NULL,
+                environment TEXT NOT NULL,
+                last_payload_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                FOREIGN KEY(internal_order_id)
+                    REFERENCES billing_orders(order_id)
+                    ON DELETE CASCADE
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_gateway_provider_status
+            ON billing_gateway_transactions(
+                provider,
+                status,
+                updated_at
+            );
+            """
+        )
+        connection.commit()
+
+
+def _basic_authorization() -> str:
+    key = server_key()
+
+    if not key:
+        raise RuntimeError(
+            "DOCURAPI_MIDTRANS_SERVER_KEY belum dikonfigurasi."
+        )
+
+    encoded = base64.b64encode(
+        f"{key}:".encode("utf-8")
+    ).decode("ascii")
+
+    return f"Basic {encoded}"
+
+
+def _request_json(
+    method: str,
+    url: str,
+    payload: dict[str, Any] | None = None,
+    timeout: int = 30,
+) -> dict[str, Any]:
+    data = None
+
+    if payload is not None:
+        data = json.dumps(
+            payload,
+            ensure_ascii=False,
+        ).encode("utf-8")
+
+    request = urllib.request.Request(
+        url=url,
+        data=data,
+        method=method,
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": _basic_authorization(),
+            "User-Agent": "DocuRapi/5.7 MidtransGateway",
+        },
+    )
+
+    context = ssl.create_default_context()
+
+    try:
+        with urllib.request.urlopen(
+            request,
+            timeout=timeout,
+            context=context,
+        ) as response:
+            raw = response.read().decode("utf-8")
+
+            return json.loads(
+                raw or "{}"
+            )
+
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode(
+            "utf-8",
+            errors="replace",
+        )
+
+        try:
+            detail = json.loads(raw)
+        except json.JSONDecodeError:
+            detail = {
+                "message": raw or str(exc)
+            }
+
+        raise RuntimeError(
+            (
+                f"Midtrans HTTP {exc.code}: "
+                f"{json.dumps(detail, ensure_ascii=False)}"
+            )
+        ) from exc
+
+    except urllib.error.URLError as exc:
+        raise RuntimeError(
+            f"Koneksi ke Midtrans gagal: {exc.reason}"
+        ) from exc
+
+
+def _user_owns_order(
+    order: dict[str, Any],
+    user_id: str,
+) -> None:
+    if str(order["user_id"]) != str(user_id):
+        raise PermissionError(
+            "Pesanan bukan milik pengguna ini."
+        )
+
+
+def _find_gateway_by_internal_order(
+    internal_order_id: str,
+) -> dict[str, Any] | None:
+    with connect() as connection:
+        row = connection.execute(
+            """
+            SELECT *
+            FROM billing_gateway_transactions
+            WHERE internal_order_id = ?
+            """,
+            (internal_order_id,),
+        ).fetchone()
+
+    return dict(row) if row else None
+
+
+def _find_gateway_by_provider_order(
+    provider_order_id: str,
+) -> dict[str, Any] | None:
+    with connect() as connection:
+        row = connection.execute(
+            """
+            SELECT *
+            FROM billing_gateway_transactions
+            WHERE provider_order_id = ?
+            """,
+            (provider_order_id,),
+        ).fetchone()
+
+    return dict(row) if row else None
+
+
+def _store_gateway_transaction(
+    internal_order_id: str,
+    provider_order_id: str,
+    snap_token: str | None,
+    redirect_url: str | None,
+    status: str,
+    payload: dict[str, Any],
+    provider_transaction_id: str | None = None,
+) -> None:
+    now = utc_now_text()
+
+    with connect() as connection:
+        connection.execute(
+            """
+            INSERT INTO billing_gateway_transactions (
+                gateway_transaction_id,
+                provider,
+                internal_order_id,
+                provider_order_id,
+                snap_token,
+                redirect_url,
+                provider_transaction_id,
+                status,
+                environment,
+                last_payload_json,
+                created_at,
+                updated_at
+            )
+            VALUES (
+                ?, 'midtrans', ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?
+            )
+            ON CONFLICT(internal_order_id) DO UPDATE SET
+                snap_token = excluded.snap_token,
+                redirect_url = excluded.redirect_url,
+                provider_transaction_id = COALESCE(
+                    excluded.provider_transaction_id,
+                    billing_gateway_transactions.provider_transaction_id
+                ),
+                status = excluded.status,
+                environment = excluded.environment,
+                last_payload_json = excluded.last_payload_json,
+                updated_at = excluded.updated_at
+            """,
+            (
+                uuid4().hex,
+                internal_order_id,
+                provider_order_id,
+                snap_token,
+                redirect_url,
+                provider_transaction_id,
+                status,
+                midtrans_environment(),
+                json.dumps(
+                    payload,
+                    ensure_ascii=False,
+                ),
+                now,
+                now,
+            ),
+        )
+
+        connection.commit()
+
+
+def create_snap_checkout(
+    internal_order_id: str,
+    user_id: str,
+) -> dict[str, Any]:
+    initialize_midtrans_database()
+
+    if payment_mode() not in {
+        "gateway",
+        "midtrans",
+        "sandbox",
+        "production",
+    }:
+        raise RuntimeError(
+            (
+                "Payment mode belum menggunakan gateway. "
+                "Jalankan konfigurasi Midtrans terlebih dahulu."
+            )
+        )
+
+    if not is_configured():
+        raise RuntimeError(
+            (
+                "Client Key dan Server Key Midtrans "
+                "belum dikonfigurasi."
+            )
+        )
+
+    order = get_order(
+        internal_order_id
+    )
+
+    if not order:
+        raise ValueError(
+            "Pesanan tidak ditemukan."
+        )
+
+    _user_owns_order(
+        order,
+        user_id,
+    )
+
+    if order["status"] == "paid":
+        return {
+            "success": True,
+            "already_paid": True,
+            "order": order,
+        }
+
+    if order["status"] != "pending":
+        raise ValueError(
+            (
+                "Pesanan tidak dapat dibayar dari status "
+                f"{order['status']}."
+            )
+        )
+
+    existing = _find_gateway_by_internal_order(
+        internal_order_id
+    )
+
+    if (
+        existing
+        and existing.get("snap_token")
+        and existing.get("status")
+        in {
+            "created",
+            "pending",
+        }
+    ):
+        return {
+            "success": True,
+            "already_created": True,
+            "provider": "midtrans",
+            "environment": existing["environment"],
+            "snap_token": existing["snap_token"],
+            "redirect_url": existing["redirect_url"],
+            "provider_order_id": existing["provider_order_id"],
+        }
+
+    provider_order_id = str(
+        order["order_number"]
+    )[:50]
+
+    payload: dict[str, Any] = {
+        "transaction_details": {
+            "order_id": provider_order_id,
+            "gross_amount": int(
+                order["total"]
+            ),
+        },
+        "credit_card": {
+            "secure": True
+        },
+        "customer_details": {
+            "email": (
+                order.get("user_email")
+                or "customer@docurapi.local"
+            ),
+        },
+        "callbacks": {
+            "finish": (
+                f"{public_base_url()}/billing"
+            ),
+        },
+    }
+
+    response = _request_json(
+        "POST",
+        snap_transaction_url(),
+        payload=payload,
+    )
+
+    token = str(
+        response.get("token")
+        or ""
+    ).strip()
+
+    redirect_url = str(
+        response.get("redirect_url")
+        or ""
+    ).strip()
+
+    if not token:
+        raise RuntimeError(
+            "Midtrans tidak mengembalikan Snap token."
+        )
+
+    _store_gateway_transaction(
+        internal_order_id=internal_order_id,
+        provider_order_id=provider_order_id,
+        snap_token=token,
+        redirect_url=redirect_url or None,
+        status="created",
+        payload=response,
+    )
+
+    return {
+        "success": True,
+        "provider": "midtrans",
+        "environment": midtrans_environment(),
+        "snap_token": token,
+        "redirect_url": redirect_url,
+        "provider_order_id": provider_order_id,
+    }
+
+
+def verify_signature(
+    payload: dict[str, Any],
+    key: str | None = None,
+) -> bool:
+    order_id = str(
+        payload.get("order_id")
+        or ""
+    )
+
+    status_code = str(
+        payload.get("status_code")
+        or ""
+    )
+
+    gross_amount = str(
+        payload.get("gross_amount")
+        or ""
+    )
+
+    received_signature = str(
+        payload.get("signature_key")
+        or ""
+    )
+
+    if not all(
+        [
+            order_id,
+            status_code,
+            gross_amount,
+            received_signature,
+        ]
+    ):
+        return False
+
+    secret = (
+        key
+        if key is not None
+        else server_key()
+    )
+
+    if not secret:
+        return False
+
+    expected = hashlib.sha512(
+        (
+            order_id
+            + status_code
+            + gross_amount
+            + secret
+        ).encode("utf-8")
+    ).hexdigest()
+
+    return hmac.compare_digest(
+        expected,
+        received_signature,
+    )
+
+
+def fetch_transaction_status(
+    provider_order_id: str,
+) -> dict[str, Any]:
+    return _request_json(
+        "GET",
+        status_url(provider_order_id),
+    )
+
+
+def _amount_matches(
+    order: dict[str, Any],
+    payload: dict[str, Any],
+) -> bool:
+    try:
+        expected = Decimal(
+            str(order["total"])
+        )
+
+        received = Decimal(
+            str(
+                payload.get(
+                    "gross_amount"
+                )
+            )
+        )
+
+    except (
+        InvalidOperation,
+        TypeError,
+    ):
+        return False
+
+    return expected == received
+
+
+def _update_gateway_status(
+    gateway: dict[str, Any],
+    status: str,
+    payload: dict[str, Any],
+) -> None:
+    _store_gateway_transaction(
+        internal_order_id=(
+            gateway["internal_order_id"]
+        ),
+        provider_order_id=(
+            gateway["provider_order_id"]
+        ),
+        snap_token=gateway.get(
+            "snap_token"
+        ),
+        redirect_url=gateway.get(
+            "redirect_url"
+        ),
+        provider_transaction_id=(
+            str(
+                payload.get(
+                    "transaction_id"
+                )
+                or gateway.get(
+                    "provider_transaction_id"
+                )
+                or ""
+            )
+            or None
+        ),
+        status=status,
+        payload=payload,
+    )
+
+
+def apply_verified_status(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    provider_order_id = str(
+        payload.get("order_id")
+        or ""
+    )
+
+    if not provider_order_id:
+        raise ValueError(
+            "order_id Midtrans tidak tersedia."
+        )
+
+    gateway = _find_gateway_by_provider_order(
+        provider_order_id
+    )
+
+    if not gateway:
+        raise ValueError(
+            (
+                "Transaksi Midtrans tidak terhubung "
+                "dengan pesanan DocuRapi."
+            )
+        )
+
+    order = get_order(
+        gateway["internal_order_id"]
+    )
+
+    if not order:
+        raise ValueError(
+            "Pesanan DocuRapi tidak ditemukan."
+        )
+
+    if not _amount_matches(
+        order,
+        payload,
+    ):
+        raise PermissionError(
+            (
+                "Nominal pembayaran tidak sama "
+                "dengan total pesanan."
+            )
+        )
+
+    transaction_status = str(
+        payload.get(
+            "transaction_status"
+        )
+        or ""
+    ).lower()
+
+    fraud_status = str(
+        payload.get(
+            "fraud_status"
+        )
+        or ""
+    ).lower()
+
+    transaction_id = str(
+        payload.get(
+            "transaction_id"
+        )
+        or provider_order_id
+    )
+
+    successful = (
+        transaction_status == "settlement"
+        or (
+            transaction_status == "capture"
+            and fraud_status in {
+                "",
+                "accept",
+            }
+        )
+    )
+
+    if successful:
+        paid = complete_order_payment(
+            order_id=order["order_id"],
+            provider="midtrans",
+            transaction_id=transaction_id,
+            payload=payload,
+        )
+
+        _update_gateway_status(
+            gateway,
+            "paid",
+            payload,
+        )
+
+        return {
+            "success": True,
+            "state": "paid",
+            "order": paid,
+        }
+
+    if transaction_status == "pending":
+        _update_gateway_status(
+            gateway,
+            "pending",
+            payload,
+        )
+
+        return {
+            "success": True,
+            "state": "pending",
+            "order": order,
+        }
+
+    failure_map = {
+        "deny": "failed",
+        "cancel": "canceled",
+        "expire": "expired",
+    }
+
+    if transaction_status in failure_map:
+        mapped = failure_map[
+            transaction_status
+        ]
+
+        with connect() as connection:
+            connection.execute(
+                """
+                UPDATE billing_orders
+                SET
+                    status = ?,
+                    updated_at = ?
+                WHERE order_id = ?
+                  AND status = 'pending'
+                """,
+                (
+                    mapped,
+                    utc_now_text(),
+                    order["order_id"],
+                ),
+            )
+
+            connection.commit()
+
+        _update_gateway_status(
+            gateway,
+            mapped,
+            payload,
+        )
+
+        return {
+            "success": True,
+            "state": mapped,
+            "order": get_order(
+                order["order_id"]
+            ),
+        }
+
+    if transaction_status in {
+        "refund",
+        "partial_refund",
+    }:
+        _update_gateway_status(
+            gateway,
+            "refund_review",
+            payload,
+        )
+
+        return {
+            "success": True,
+            "state": "refund_review",
+            "message": (
+                "Refund tercatat dan memerlukan "
+                "rekonsiliasi hak pemrosesan."
+            ),
+            "order": order,
+        }
+
+    _update_gateway_status(
+        gateway,
+        transaction_status or "unknown",
+        payload,
+    )
+
+    return {
+        "success": True,
+        "state": (
+            transaction_status
+            or "unknown"
+        ),
+        "order": order,
+    }
+
+
+def synchronize_order(
+    internal_order_id: str,
+    user_id: str,
+) -> dict[str, Any]:
+    order = get_order(
+        internal_order_id
+    )
+
+    if not order:
+        raise ValueError(
+            "Pesanan tidak ditemukan."
+        )
+
+    _user_owns_order(
+        order,
+        user_id,
+    )
+
+    gateway = _find_gateway_by_internal_order(
+        internal_order_id
+    )
+
+    if not gateway:
+        raise ValueError(
+            "Transaksi Midtrans belum dibuat."
+        )
+
+    payload = fetch_transaction_status(
+        gateway["provider_order_id"]
+    )
+
+    return apply_verified_status(
+        payload
+    )
+
+
+def handle_webhook(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    if not verify_signature(
+        payload
+    ):
+        raise PermissionError(
+            (
+                "Signature notification Midtrans "
+                "tidak valid."
+            )
+        )
+
+    provider_order_id = str(
+        payload.get("order_id")
+        or ""
+    )
+
+    verify_directly = os.getenv(
+        "DOCURAPI_MIDTRANS_VERIFY_STATUS",
+        "1",
+    ).strip() == "1"
+
+    verified_payload = (
+        fetch_transaction_status(
+            provider_order_id
+        )
+        if verify_directly
+        else payload
+    )
+
+    return apply_verified_status(
+        verified_payload
+    )
+
+
+def gateway_health() -> dict[str, Any]:
+    initialize_midtrans_database()
+
+    environment = midtrans_environment()
+    base_url = public_base_url()
+
+    production_url_ready = (
+        base_url.startswith(
+            "https://"
+        )
+        and "localhost"
+        not in base_url
+        and "127.0.0.1"
+        not in base_url
+    )
+
+    return {
+        "status": "ok",
+        "provider": "midtrans",
+        "environment": environment,
+        "configured": is_configured(),
+        "payment_mode": payment_mode(),
+        "snap_transaction_url": (
+            snap_transaction_url()
+        ),
+        "snap_js_url": snap_js_url(),
+        "public_https_ready": (
+            production_url_ready
+        ),
+        "tls_1_3_supported": bool(
+            getattr(
+                ssl,
+                "HAS_TLSv1_3",
+                False,
+            )
+        ),
+        "webhook_path": (
+            "/api/payments/midtrans/webhook"
+        ),
+        "production_ready": (
+            environment == "production"
+            and is_configured()
+            and payment_mode()
+            in {
+                "gateway",
+                "midtrans",
+                "production",
+            }
+            and production_url_ready
+        ),
+    }
+
+
+def run_midtrans_self_test() -> dict[str, Any]:
+    fake_key = 'self-test-' + 'server-key'
+
+    payload = {
+        "order_id": "ORD-SELF-TEST",
+        "status_code": "200",
+        "gross_amount": "10000.00",
+    }
+
+    payload["signature_key"] = hashlib.sha512(
+        (
+            payload["order_id"]
+            + payload["status_code"]
+            + payload["gross_amount"]
+            + fake_key
+        ).encode("utf-8")
+    ).hexdigest()
+
+    valid = verify_signature(
+        payload,
+        key=fake_key,
+    )
+
+    invalid = verify_signature(
+        {
+            **payload,
+            "gross_amount": "9999.00",
+        },
+        key=fake_key,
+    )
+
+    if not valid or invalid:
+        raise RuntimeError(
+            "Self-test signature Midtrans gagal."
+        )
+
+    return {
+        "status": "passed",
+        "signature_valid": valid,
+        "tampered_payload_rejected": (
+            not invalid
+        ),
+        "environment": (
+            midtrans_environment()
+        ),
+        "configured": is_configured(),
+        "network_called": False,
+    }
+
+
+initialize_midtrans_database()

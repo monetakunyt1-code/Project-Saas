@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Task Center DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/task_center.css"
+    >
+
+    <script src="/static/security_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="logo">DR</span>
+
+            <span>
+                <small>
+                    DOCUMENT FORMATTING ASSISTANT
+                </small>
+
+                <strong>Task Center</strong>
+            </span>
+        </a>
+
+        <nav>
+            <a href="/">Aplikasi</a>
+            <a href="/advanced">Dashboard</a>
+            <a href="/workspaces">Workspace</a>
+            <a href="/account">Akun</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero-card">
+            <div>
+                <p class="eyebrow">
+                    BACKGROUND PROCESSING
+                </p>
+
+                <h1>Pekerjaan Latar Belakang</h1>
+
+                <p>
+                    Pantau format dokumen, batch, audit akademik,
+                    dan pembuatan draft jurnal secara real-time.
+                </p>
+            </div>
+
+            <button
+                id="refresh-jobs"
+                class="secondary-button"
+                type="button"
+            >
+                Muat Ulang
+            </button>
+        </section>
+
+        <section
+            id="job-summary"
+            class="summary-grid"
+        ></section>
+
+        <section class="card">
+            <div class="section-heading">
+                <div>
+                    <h2>Daftar Pekerjaan</h2>
+
+                    <p id="workspace-label">
+                        Memuat workspace...
+                    </p>
+                </div>
+
+                <label class="filter-label">
+                    <span>Filter</span>
+
+                    <select id="status-filter">
+                        <option value="">
+                            Semua status
+                        </option>
+
+                        <option value="queued">
+                            Menunggu
+                        </option>
+
+                        <option value="running">
+                            Berjalan
+                        </option>
+
+                        <option value="completed">
+                            Selesai
+                        </option>
+
+                        <option value="failed">
+                            Gagal
+                        </option>
+
+                        <option value="canceled">
+                            Dibatalkan
+                        </option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="job-list">
+                <div class="loading">
+                    Memuat pekerjaan...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/task_center.js"></script>
+
+    <a
+        class="system-health-launch"
+        href="/system-health"
+    >
+        System Health
+    </a>
+
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

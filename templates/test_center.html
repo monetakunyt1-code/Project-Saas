@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Test Center DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/test_center.css"
+    >
+
+    <script src="/static/security_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="logo">DR</span>
+
+            <span>
+                <small>
+                    DOCUMENT FORMATTING ASSISTANT
+                </small>
+
+                <strong>Test Center</strong>
+            </span>
+        </a>
+
+        <nav>
+            <a href="/">Aplikasi</a>
+            <a href="/task-center">
+                Task Center
+            </a>
+            <a href="/system-health">
+                System Health
+            </a>
+            <a href="/admin">Admin</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero-card">
+            <div>
+                <p class="eyebrow">
+                    RELEASE READINESS
+                </p>
+
+                <h1>
+                    Stabilization & Acceptance Testing
+                </h1>
+
+                <p>
+                    Periksa source code, route, middleware,
+                    database, frontend, autentikasi, API,
+                    formatter, analyzer, dan Journal Studio.
+                </p>
+            </div>
+
+            <div class="hero-actions">
+                <select id="test-mode">
+                    <option value="full">
+                        Full Acceptance Test
+                    </option>
+
+                    <option value="structural">
+                        Structural Test
+                    </option>
+                </select>
+
+                <button
+                    id="run-tests"
+                    type="button"
+                >
+                    Jalankan Pengujian
+                </button>
+            </div>
+        </section>
+
+        <section
+            id="summary-grid"
+            class="summary-grid"
+        >
+            <article>
+                <span>Status</span>
+                <strong id="summary-status">
+                    Belum dijalankan
+                </strong>
+            </article>
+
+            <article>
+                <span>Score</span>
+                <strong id="summary-score">-</strong>
+            </article>
+
+            <article>
+                <span>PASS</span>
+                <strong id="summary-pass">-</strong>
+            </article>
+
+            <article>
+                <span>FAIL</span>
+                <strong id="summary-fail">-</strong>
+            </article>
+
+            <article>
+                <span>WARNING</span>
+                <strong id="summary-warning">-</strong>
+            </article>
+        </section>
+
+        <section class="card">
+            <div class="section-heading">
+                <div>
+                    <h2>Hasil Pemeriksaan</h2>
+
+                    <p id="report-time">
+                        Belum ada laporan.
+                    </p>
+                </div>
+
+                <div class="report-actions">
+                    <a
+                        href="/api/tests/report/download?format=html"
+                    >
+                        HTML
+                    </a>
+
+                    <a
+                        href="/api/tests/report/download?format=json"
+                    >
+                        JSON
+                    </a>
+
+                    <a
+                        href="/api/tests/report/download?format=markdown"
+                    >
+                        Markdown
+                    </a>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <select id="status-filter">
+                    <option value="">
+                        Semua status
+                    </option>
+
+                    <option value="PASS">
+                        PASS
+                    </option>
+
+                    <option value="FAIL">
+                        FAIL
+                    </option>
+
+                    <option value="WARNING">
+                        WARNING
+                    </option>
+
+                    <option value="SKIPPED">
+                        SKIPPED
+                    </option>
+                </select>
+
+                <input
+                    id="search-input"
+                    type="search"
+                    placeholder="Cari pemeriksaan..."
+                >
+            </div>
+
+            <div
+                id="result-table"
+                class="table-wrapper"
+            >
+                <div class="empty-state">
+                    Jalankan acceptance test atau muat
+                    laporan terakhir.
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-heading">
+                <div>
+                    <h2>Dokumen Uji</h2>
+
+                    <p>
+                        Dokumen DOCX yang dibuat otomatis
+                        untuk pengujian DocuRapi.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                id="fixture-list"
+                class="fixture-grid"
+            ></div>
+        </section>
+    </main>
+
+    <div
+        id="loading-overlay"
+        class="loading-overlay hidden"
+    >
+        <div class="loading-card">
+            <div class="spinner"></div>
+
+            <h2>
+                Acceptance test sedang berjalan
+            </h2>
+
+            <p>
+                Pemeriksaan dapat memerlukan beberapa waktu.
+            </p>
+        </div>
+    </div>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/test_center.js"></script>
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

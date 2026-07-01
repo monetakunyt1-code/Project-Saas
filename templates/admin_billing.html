@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Admin Billing DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/billing_center.css"
+    >
+
+    <script src="/static/security_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="logo">DR</span>
+
+            <span>
+                <small>ADMINISTRATION</small>
+
+                <strong>
+                    Billing Management
+                </strong>
+            </span>
+        </a>
+
+        <nav>
+            <a href="/billing">Billing</a>
+            <a href="/admin">Admin</a>
+            <a href="/system-health">System Health</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero-card">
+            <div>
+                <p class="eyebrow">
+                    PAY-PER-USE MANAGEMENT
+                </p>
+
+                <h1>
+                    Pengaturan Harga dan Transaksi
+                </h1>
+
+                <p>
+                    Atur harga layanan, biaya kredit,
+                    status produk, dan refund.
+                </p>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <div class="section-heading">
+                <div>
+                    <h2>Katalog Produk</h2>
+
+                    <p>
+                        Perubahan harga langsung berlaku
+                        untuk transaksi baru.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                id="admin-product-list"
+                class="admin-product-list"
+            >
+                <div class="empty-state">
+                    Memuat katalog...
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <div class="section-heading">
+                <div>
+                    <h2>Pesanan Terbaru</h2>
+
+                    <p>
+                        Refund hanya tersedia sebelum
+                        hak pemrosesan atau kredit digunakan.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                id="admin-order-list"
+                class="order-table-wrapper"
+            >
+                <div class="empty-state">
+                    Memuat pesanan...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/admin_billing.js"></script>
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

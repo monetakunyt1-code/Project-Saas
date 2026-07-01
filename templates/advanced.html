@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>DocuRapi Advanced</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/advanced.css"
+    >
+    <script src="/static/security_client.js"></script>
+    <script src="/static/background_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <div class="logo">DR</div>
+
+                <div>
+                    <p>DOCUMENT FORMATTING ASSISTANT</p>
+                    <h1>DocuRapi Advanced</h1>
+                </div>
+            </div>
+
+            <a
+                class="back-link"
+                href="/"
+            >
+                Kembali ke Pemrosesan Utama
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="tabs">
+            <button
+                class="tab active"
+                data-panel="dashboard"
+                type="button"
+            >
+                Dashboard
+            </button>
+
+            <button
+                class="tab"
+                data-panel="batch"
+                type="button"
+            >
+                Batch Processing
+            </button>
+
+            <button
+                class="tab"
+                data-panel="profiles"
+                type="button"
+            >
+                Profil Format
+            </button>
+
+            <button
+                class="tab"
+                data-panel="batches"
+                type="button"
+            >
+                Riwayat Batch
+            </button>
+        </nav>
+
+        <section
+            id="panel-dashboard"
+            class="panel active"
+        >
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Ringkasan Penggunaan</h2>
+
+                        <p>
+                            Statistik pemrosesan dokumen yang tersimpan
+                            secara lokal.
+                        </p>
+                    </div>
+
+                    <button
+                        id="refresh-dashboard"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Muat Ulang
+                    </button>
+                </div>
+
+                <div
+                    id="dashboard-metrics"
+                    class="metric-grid"
+                ></div>
+            </article>
+
+            <article class="card">
+                <h2>Pemrosesan Terbaru</h2>
+
+                <div id="recent-jobs"></div>
+            </article>
+        </section>
+
+        <section
+            id="panel-batch"
+            class="panel"
+        >
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Batch Processing</h2>
+
+                        <p>
+                            Proses maksimal 20 dokumen Word dalam
+                            satu kali pekerjaan.
+                        </p>
+                    </div>
+                </div>
+
+                <form
+                    id="batch-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Dokumen Word</span>
+
+                        <input
+                            type="file"
+                            name="files"
+                            accept=".docx"
+                            multiple
+                            required
+                        >
+
+                        <small>
+                            Maksimal 20 file dan total 200 MB.
+                        </small>
+                    </label>
+
+                    <div class="form-grid">
+                        <label>
+                            <span>Mode</span>
+
+                            <select name="mode">
+                                <option value="format">
+                                    Rapikan Format
+                                </option>
+
+                                <option value="analyze">
+                                    Analisis Saja
+                                </option>
+
+                                <option value="journal">
+                                    Draft Jurnal
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Preset Dasar</span>
+
+                            <select name="preset">
+                                <option value="skripsi">
+                                    Skripsi
+                                </option>
+
+                                <option value="laporan">
+                                    Laporan
+                                </option>
+
+                                <option value="jurnal">
+                                    Jurnal
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Profil Format</span>
+
+                            <select
+                                id="batch-profile"
+                                name="profile_id"
+                            >
+                                <option value="">
+                                    Tanpa profil khusus
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Template Dokumen</span>
+
+                            <select
+                                id="batch-template"
+                                name="template_id"
+                            >
+                                <option value="">
+                                    Tanpa template khusus
+                                </option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <details class="details-box">
+                        <summary>
+                            Aturan format manual
+                        </summary>
+
+                        <p>
+                            Aturan manual memiliki prioritas paling
+                            tinggi dan akan menimpa preset, template,
+                            atau profil.
+                        </p>
+
+                        <div class="form-grid">
+                            <label>
+                                <span>Font</span>
+
+                                <input
+                                    type="text"
+                                    data-custom-rule="font"
+                                    placeholder="Times New Roman"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Ukuran Isi</span>
+
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    data-custom-rule="font_size"
+                                    placeholder="12"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Spasi Baris</span>
+
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    data-custom-rule="line_spacing"
+                                    placeholder="2"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Indentasi Pertama</span>
+
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    data-custom-rule="first_line_indent_cm"
+                                    placeholder="1.25"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Margin Atas</span>
+
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    data-custom-rule="margin_top_cm"
+                                    placeholder="4"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Margin Bawah</span>
+
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    data-custom-rule="margin_bottom_cm"
+                                    placeholder="3"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Margin Kiri</span>
+
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    data-custom-rule="margin_left_cm"
+                                    placeholder="4"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Margin Kanan</span>
+
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    data-custom-rule="margin_right_cm"
+                                    placeholder="3"
+                                >
+                            </label>
+                        </div>
+                    </details>
+
+                    <div class="check-grid">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_toc"
+                                checked
+                            >
+                            Daftar Isi
+                        </label>
+
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_table_list"
+                                checked
+                            >
+                            Daftar Tabel
+                        </label>
+
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_figure_list"
+                                checked
+                            >
+                            Daftar Gambar
+                        </label>
+
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_appendix_list"
+                                checked
+                            >
+                            Daftar Lampiran
+                        </label>
+
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="include_page_numbers"
+                                checked
+                            >
+                            Nomor Halaman
+                        </label>
+                    </div>
+
+                    <button
+                        id="batch-submit"
+                        class="primary-button"
+                        type="submit"
+                    >
+                        Proses Semua Dokumen
+                    </button>
+                </form>
+
+                <div
+                    id="batch-result"
+                    class="message hidden"
+                ></div>
+            </article>
+        </section>
+
+        <section
+            id="panel-profiles"
+            class="panel"
+        >
+            <article class="card">
+                <h2>Buat Profil Format</h2>
+
+                <form
+                    id="profile-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Nama Profil</span>
+
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Contoh: Skripsi Kampus Saya"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Deskripsi</span>
+
+                        <textarea
+                            name="description"
+                            rows="3"
+                            placeholder="Keterangan singkat profil"
+                        ></textarea>
+                    </label>
+
+                    <div class="form-grid">
+                        <label>
+                            <span>Jenis Font</span>
+
+                            <input
+                                type="text"
+                                name="font"
+                                value="Times New Roman"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Ukuran Isi</span>
+
+                            <input
+                                type="number"
+                                name="font_size"
+                                value="12"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Ukuran Tabel</span>
+
+                            <input
+                                type="number"
+                                name="table_font_size"
+                                value="10"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Spasi Baris</span>
+
+                            <input
+                                type="number"
+                                name="line_spacing"
+                                value="2"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Indentasi Pertama</span>
+
+                            <input
+                                type="number"
+                                name="first_line_indent_cm"
+                                value="1.25"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Margin Atas</span>
+
+                            <input
+                                type="number"
+                                name="margin_top_cm"
+                                value="4"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Margin Bawah</span>
+
+                            <input
+                                type="number"
+                                name="margin_bottom_cm"
+                                value="3"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Margin Kiri</span>
+
+                            <input
+                                type="number"
+                                name="margin_left_cm"
+                                value="4"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Margin Kanan</span>
+
+                            <input
+                                type="number"
+                                name="margin_right_cm"
+                                value="3"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Ukuran Heading 1</span>
+
+                            <input
+                                type="number"
+                                name="heading_1_size"
+                                value="14"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Ukuran Heading 2</span>
+
+                            <input
+                                type="number"
+                                name="heading_2_size"
+                                value="12"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Ukuran Heading 3</span>
+
+                            <input
+                                type="number"
+                                name="heading_3_size"
+                                value="12"
+                                step="0.1"
+                            >
+                        </label>
+                    </div>
+
+                    <button
+                        class="primary-button"
+                        type="submit"
+                    >
+                        Simpan Profil
+                    </button>
+                </form>
+
+                <div
+                    id="profile-message"
+                    class="message hidden"
+                ></div>
+            </article>
+
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Profil Tersimpan</h2>
+
+                        <p>
+                            Profil dapat digunakan pada pemrosesan batch.
+                        </p>
+                    </div>
+
+                    <button
+                        id="refresh-profiles"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Muat Ulang
+                    </button>
+                </div>
+
+                <div id="profile-list"></div>
+            </article>
+        </section>
+
+        <section
+            id="panel-batches"
+            class="panel"
+        >
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Riwayat Batch</h2>
+
+                        <p>
+                            Arsip ZIP berisi dokumen hasil dan laporan JSON.
+                        </p>
+                    </div>
+
+                    <button
+                        id="refresh-batches"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Muat Ulang
+                    </button>
+                </div>
+
+                <div id="batch-list"></div>
+            </article>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/advanced.js"></script>
+
+    <a
+        class="academic-launch"
+        href="/audit"
+    >
+        Audit Akademik
+    </a>
+
+
+    <a
+        class="journal-studio-launch"
+        href="/journal-studio"
+    >
+        Journal Studio
+    </a>
+
+
+    <a
+        class="security-center-launch"
+        href="/security-center"
+    >
+        Security Center
+    </a>
+
+
+    <a
+        class="workspace-launch"
+        href="/workspaces"
+    >
+        Workspace
+    </a>
+
+
+    <a
+        class="task-center-launch"
+        href="/task-center"
+    >
+        Task Center
+    </a>
+
+
+    <a
+        class="system-health-launch"
+        href="/system-health"
+    >
+        System Health
+    </a>
+
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

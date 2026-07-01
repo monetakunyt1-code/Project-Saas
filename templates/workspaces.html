@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Workspace DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/workspaces.css"
+    >
+
+    <script src="/static/security_client.js"></script>
+    <script src="/static/background_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="logo">DR</span>
+
+            <span>
+                <small>
+                    DOCUMENT FORMATTING ASSISTANT
+                </small>
+
+                <strong>Workspace</strong>
+            </span>
+        </a>
+
+        <nav>
+            <a href="/">Aplikasi</a>
+            <a href="/advanced">Dashboard</a>
+            <a href="/account">Akun</a>
+            <a href="/security-center">
+                Keamanan
+            </a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero-card">
+            <div>
+                <p class="eyebrow">
+                    WORKSPACE AKTIF
+                </p>
+
+                <h1 id="active-workspace-name">
+                    Memuat workspace...
+                </h1>
+
+                <p id="active-workspace-detail">
+                    Data dokumen akan disimpan dan ditampilkan
+                    berdasarkan workspace aktif.
+                </p>
+            </div>
+
+            <div
+                id="resource-summary"
+                class="summary-grid"
+            ></div>
+        </section>
+
+        <div class="layout">
+            <section>
+                <article class="card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Workspace Saya</h2>
+
+                            <p>
+                                Pilih workspace pribadi atau tim
+                                yang sedang digunakan.
+                            </p>
+                        </div>
+
+                        <button
+                            id="refresh-workspaces"
+                            type="button"
+                            class="secondary-button"
+                        >
+                            Muat Ulang
+                        </button>
+                    </div>
+
+                    <div id="workspace-list"></div>
+                </article>
+
+                <article class="card">
+                    <h2>Buat Workspace Tim</h2>
+
+                    <form
+                        id="create-workspace-form"
+                        class="form-stack"
+                    >
+                        <label>
+                            <span>Nama workspace</span>
+
+                            <input
+                                type="text"
+                                name="name"
+                                placeholder="Contoh: Tim Skripsi 2026"
+                                required
+                            >
+                        </label>
+
+                        <button type="submit">
+                            Buat Workspace
+                        </button>
+                    </form>
+
+                    <div
+                        id="create-workspace-message"
+                        class="message hidden"
+                    ></div>
+                </article>
+
+                <article class="card">
+                    <h2>Gabung dengan Kode Undangan</h2>
+
+                    <form
+                        id="join-workspace-form"
+                        class="form-stack"
+                    >
+                        <label>
+                            <span>Kode undangan</span>
+
+                            <input
+                                type="text"
+                                name="invite_code"
+                                required
+                            >
+                        </label>
+
+                        <button type="submit">
+                            Gabung Workspace
+                        </button>
+                    </form>
+
+                    <div
+                        id="join-workspace-message"
+                        class="message hidden"
+                    ></div>
+                </article>
+            </section>
+
+            <aside>
+                <article class="card">
+                    <h2>Anggota Workspace</h2>
+
+                    <div id="member-list">
+                        <div class="loading">
+                            Memuat anggota...
+                        </div>
+                    </div>
+                </article>
+
+                <article
+                    id="invite-card"
+                    class="card hidden"
+                >
+                    <h2>Buat Undangan</h2>
+
+                    <form
+                        id="invite-form"
+                        class="form-stack"
+                    >
+                        <label>
+                            <span>Peran anggota</span>
+
+                            <select name="role">
+                                <option value="member">
+                                    Member
+                                </option>
+
+                                <option value="viewer">
+                                    Viewer
+                                </option>
+
+                                <option value="admin">
+                                    Admin Workspace
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Berlaku selama</span>
+
+                            <select name="expires_hours">
+                                <option value="24">
+                                    24 jam
+                                </option>
+
+                                <option value="72" selected>
+                                    3 hari
+                                </option>
+
+                                <option value="168">
+                                    7 hari
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Maksimal penggunaan</span>
+
+                            <input
+                                type="number"
+                                name="max_uses"
+                                value="1"
+                                min="1"
+                                max="100"
+                            >
+                        </label>
+
+                        <button type="submit">
+                            Buat Kode Undangan
+                        </button>
+                    </form>
+
+                    <div
+                        id="invite-result"
+                        class="message hidden"
+                    ></div>
+                </article>
+            </aside>
+        </div>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/workspaces.js"></script>
+
+    <a
+        class="task-center-launch"
+        href="/task-center"
+    >
+        Task Center
+    </a>
+
+
+    <a
+        class="system-health-launch"
+        href="/system-health"
+    >
+        System Health
+    </a>
+
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

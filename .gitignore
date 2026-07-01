@@ -1,0 +1,62 @@
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+!.env.*.example
+.env.production
+infra/.env
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local databases and runtime data
+storage/
+logs/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.eml
+
+# User documents and generated artifacts
+*.doc
+*.docx
+*.pdf
+*.xls
+*.xlsx
+*.spv
+*.zip
+*.7z
+*.rar
+releases/
+release/
+dist/
+build/
+
+# Local backups and temporary installers
+_backup_*/
+_backup_*
+_install_*
+_patch_*
+_diagnose_*
+_prepare_*
+*.tmp
+*.bak
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

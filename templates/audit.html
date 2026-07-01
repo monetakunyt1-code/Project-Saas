@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Audit Akademik DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/audit.css"
+    >
+    <script src="/static/security_client.js"></script>
+    <script src="/static/background_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="brand">
+                <div class="logo">DR</div>
+
+                <div>
+                    <p>DOCUMENT FORMATTING ASSISTANT</p>
+                    <h1>Audit Akademik</h1>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <a href="/">
+                    Pemrosesan Utama
+                </a>
+
+                <a href="/advanced">
+                    Fitur Lanjutan
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="tabs">
+            <button
+                class="tab active"
+                data-panel="audit"
+                type="button"
+            >
+                Audit Dokumen
+            </button>
+
+            <button
+                class="tab"
+                data-panel="history"
+                type="button"
+            >
+                Riwayat Audit
+            </button>
+        </nav>
+
+        <section
+            id="panel-audit"
+            class="panel active"
+        >
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Periksa Dokumen Akademik</h2>
+
+                        <p>
+                            Audit struktur, format, penomoran,
+                            caption, sitasi, daftar pustaka,
+                            dan kelengkapan dokumen.
+                        </p>
+                    </div>
+                </div>
+
+                <form
+                    id="audit-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>File Word</span>
+
+                        <input
+                            type="file"
+                            name="file"
+                            accept=".docx"
+                            required
+                        >
+
+                        <small>
+                            Gunakan dokumen .docx maksimal 20 MB.
+                        </small>
+                    </label>
+
+                    <div class="form-grid">
+                        <label>
+                            <span>Jenis Dokumen</span>
+
+                            <select
+                                id="document-type"
+                                name="document_type"
+                            >
+                                <option value="skripsi">
+                                    Skripsi
+                                </option>
+
+                                <option value="laporan">
+                                    Laporan
+                                </option>
+
+                                <option value="jurnal">
+                                    Artikel Jurnal
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Font Acuan</span>
+
+                            <input
+                                id="font"
+                                type="text"
+                                name="font"
+                                value="Times New Roman"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Ukuran Isi</span>
+
+                            <input
+                                id="font-size"
+                                type="number"
+                                name="font_size"
+                                value="12"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Spasi Baris</span>
+
+                            <input
+                                id="line-spacing"
+                                type="number"
+                                name="line_spacing"
+                                value="2"
+                                step="0.05"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Margin Atas</span>
+
+                            <input
+                                id="margin-top"
+                                type="number"
+                                name="margin_top_cm"
+                                value="4"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Margin Bawah</span>
+
+                            <input
+                                id="margin-bottom"
+                                type="number"
+                                name="margin_bottom_cm"
+                                value="3"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Margin Kiri</span>
+
+                            <input
+                                id="margin-left"
+                                type="number"
+                                name="margin_left_cm"
+                                value="4"
+                                step="0.1"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Margin Kanan</span>
+
+                            <input
+                                id="margin-right"
+                                type="number"
+                                name="margin_right_cm"
+                                value="3"
+                                step="0.1"
+                            >
+                        </label>
+                    </div>
+
+                    <button
+                        id="audit-submit"
+                        class="primary-button"
+                        type="submit"
+                    >
+                        Jalankan Audit Akademik
+                    </button>
+                </form>
+
+                <div
+                    id="audit-result"
+                    class="result hidden"
+                ></div>
+            </article>
+
+            <article class="card">
+                <h2>Komponen yang Diperiksa</h2>
+
+                <div class="feature-grid">
+                    <div>
+                        <strong>Struktur</strong>
+                        <span>BAB, subbab, bagian awal, lampiran</span>
+                    </div>
+
+                    <div>
+                        <strong>Penomoran</strong>
+                        <span>Urutan BAB, subbab, tabel, gambar</span>
+                    </div>
+
+                    <div>
+                        <strong>Format</strong>
+                        <span>Font, ukuran, spasi, margin, style</span>
+                    </div>
+
+                    <div>
+                        <strong>Referensi</strong>
+                        <span>Sitasi dan daftar pustaka indikatif</span>
+                    </div>
+
+                    <div>
+                        <strong>Otomatisasi</strong>
+                        <span>Daftar isi dan nomor halaman</span>
+                    </div>
+
+                    <div>
+                        <strong>Skor</strong>
+                        <span>Nilai kepatuhan dokumen 0–100</span>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section
+            id="panel-history"
+            class="panel"
+        >
+            <article class="card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Riwayat Audit</h2>
+
+                        <p>
+                            Buka kembali laporan visual atau
+                            unduh laporan JSON.
+                        </p>
+                    </div>
+
+                    <button
+                        id="refresh-history"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Muat Ulang
+                    </button>
+                </div>
+
+                <div id="audit-history"></div>
+            </article>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/audit.js"></script>
+
+    <a
+        class="journal-studio-launch"
+        href="/journal-studio"
+    >
+        Journal Studio
+    </a>
+
+
+    <a
+        class="security-center-launch"
+        href="/security-center"
+    >
+        Security Center
+    </a>
+
+
+    <a
+        class="workspace-launch"
+        href="/workspaces"
+    >
+        Workspace
+    </a>
+
+
+    <a
+        class="task-center-launch"
+        href="/task-center"
+    >
+        Task Center
+    </a>
+
+
+    <a
+        class="system-health-launch"
+        href="/system-health"
+    >
+        System Health
+    </a>
+
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Journal Studio DocuRapi</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/journal_studio.css"
+    >
+    <script src="/static/security_client.js"></script>
+    <script src="/static/background_client.js"></script>
+    <link rel="stylesheet" href="/static/docurapi_ui_shell.css">
+</head>
+
+<body>
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="brand">
+                <div class="logo">DR</div>
+
+                <div>
+                    <p>DOCUMENT FORMATTING ASSISTANT</p>
+                    <h1>Journal Studio</h1>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <a href="/">
+                    Pemrosesan Utama
+                </a>
+
+                <a href="/advanced">
+                    Fitur Lanjutan
+                </a>
+
+                <a href="/audit">
+                    Audit Akademik
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="tabs">
+            <button
+                class="tab active"
+                data-panel="builder"
+                type="button"
+            >
+                Buat Draft Jurnal
+            </button>
+
+            <button
+                class="tab"
+                data-panel="history"
+                type="button"
+            >
+                Riwayat Draft
+            </button>
+        </nav>
+
+        <section
+            id="panel-builder"
+            class="panel active"
+        >
+            <article class="card">
+                <div class="section-heading">
+                    <h2>Transformasi Skripsi Menjadi Artikel</h2>
+
+                    <p>
+                        Dokumen dipetakan ke struktur abstrak,
+                        pendahuluan, metode, hasil dan pembahasan,
+                        kesimpulan, serta daftar pustaka.
+                    </p>
+                </div>
+
+                <form
+                    id="journal-form"
+                    class="form-stack"
+                >
+                    <label>
+                        <span>Dokumen sumber</span>
+
+                        <input
+                            type="file"
+                            name="file"
+                            accept=".docx"
+                            required
+                        >
+
+                        <small>
+                            Gunakan dokumen Word .docx maksimal 20 MB.
+                        </small>
+                    </label>
+
+                    <div class="form-grid">
+                        <label>
+                            <span>Judul artikel</span>
+
+                            <input
+                                type="text"
+                                name="title"
+                                placeholder="Kosongkan agar dideteksi otomatis"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Nama penulis</span>
+
+                            <input
+                                type="text"
+                                name="author_name"
+                                placeholder="Nama lengkap penulis"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Afiliasi</span>
+
+                            <input
+                                type="text"
+                                name="affiliation"
+                                placeholder="Program studi dan institusi"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Email</span>
+
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="email@domain.com"
+                            >
+                        </label>
+
+                        <label class="wide">
+                            <span>Kata kunci</span>
+
+                            <input
+                                type="text"
+                                name="keywords"
+                                placeholder="Pisahkan dengan titik koma atau koma"
+                            >
+                        </label>
+
+                        <label>
+                            <span>Mode transformasi</span>
+
+                            <select name="reduction_mode">
+                                <option value="extractive">
+                                    Ringkasan Ekstraktif
+                                </option>
+
+                                <option value="preserve">
+                                    Pertahankan Seluruh Isi
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Template jurnal</span>
+
+                            <select
+                                id="journal-template"
+                                name="template_id"
+                            >
+                                <option value="">
+                                    Gunakan format jurnal bawaan
+                                </option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <label class="check-option">
+                        <input
+                            type="checkbox"
+                            name="include_literature"
+                            checked
+                        >
+
+                        Gabungkan Bab II ke bagian Pendahuluan
+                    </label>
+
+                    <details class="details-box">
+                        <summary>
+                            Target jumlah kata per bagian
+                        </summary>
+
+                        <p>
+                            Target digunakan pada mode ringkasan
+                            ekstraktif. Nilai tidak harus tercapai
+                            secara tepat karena sistem mempertahankan
+                            kalimat utuh.
+                        </p>
+
+                        <div class="target-grid">
+                            <label>
+                                <span>Abstrak</span>
+
+                                <input
+                                    type="number"
+                                    name="target_abstract_words"
+                                    value="200"
+                                    min="50"
+                                    max="500"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Pendahuluan</span>
+
+                                <input
+                                    type="number"
+                                    name="target_introduction_words"
+                                    value="1200"
+                                    min="100"
+                                    max="5000"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Metode</span>
+
+                                <input
+                                    type="number"
+                                    name="target_methods_words"
+                                    value="700"
+                                    min="100"
+                                    max="3000"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Hasil dan Pembahasan</span>
+
+                                <input
+                                    type="number"
+                                    name="target_results_words"
+                                    value="1800"
+                                    min="100"
+                                    max="8000"
+                                >
+                            </label>
+
+                            <label>
+                                <span>Kesimpulan</span>
+
+                                <input
+                                    type="number"
+                                    name="target_conclusion_words"
+                                    value="300"
+                                    min="50"
+                                    max="1500"
+                                >
+                            </label>
+                        </div>
+                    </details>
+
+                    <button
+                        id="journal-submit"
+                        class="primary-button"
+                        type="submit"
+                    >
+                        Buat Draft Artikel Jurnal
+                    </button>
+                </form>
+
+                <div
+                    id="journal-result"
+                    class="result hidden"
+                ></div>
+            </article>
+
+            <article class="card">
+                <h2>Cakupan Transformasi</h2>
+
+                <div class="feature-grid">
+                    <div>
+                        <strong>Bab I dan II</strong>
+                        <span>
+                            Dipetakan menjadi Pendahuluan.
+                        </span>
+                    </div>
+
+                    <div>
+                        <strong>Bab III</strong>
+                        <span>
+                            Dipetakan menjadi Metode Penelitian.
+                        </span>
+                    </div>
+
+                    <div>
+                        <strong>Bab IV</strong>
+                        <span>
+                            Dipetakan menjadi Hasil dan Pembahasan.
+                        </span>
+                    </div>
+
+                    <div>
+                        <strong>Bab V</strong>
+                        <span>
+                            Dipetakan menjadi Kesimpulan.
+                        </span>
+                    </div>
+
+                    <div>
+                        <strong>Referensi</strong>
+                        <span>
+                            Dipertahankan dengan hanging indent.
+                        </span>
+                    </div>
+
+                    <div>
+                        <strong>Peringatan</strong>
+                        <span>
+                            Menjelaskan bagian yang belum terdeteksi.
+                        </span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="notice-card">
+                <strong>Catatan penting</strong>
+
+                <p>
+                    Sistem belum memindahkan tabel dan gambar secara
+                    otomatis. Ringkasan ekstraktif hanya memilih
+                    kalimat dari dokumen sumber dan tetap harus
+                    ditinjau secara akademik oleh penulis.
+                </p>
+            </article>
+        </section>
+
+        <section
+            id="panel-history"
+            class="panel"
+        >
+            <article class="card">
+                <div class="history-heading">
+                    <div>
+                        <h2>Riwayat Draft Jurnal</h2>
+
+                        <p>
+                            Unduh kembali dokumen atau laporan
+                            transformasi.
+                        </p>
+                    </div>
+
+                    <button
+                        id="refresh-history"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Muat Ulang
+                    </button>
+                </div>
+
+                <div id="journal-history"></div>
+            </article>
+        </section>
+    </main>
+
+    <div
+        id="toast"
+        class="toast hidden"
+    ></div>
+
+    <script src="/static/journal_studio.js"></script>
+
+    <a
+        class="security-center-launch"
+        href="/security-center"
+    >
+        Security Center
+    </a>
+
+
+    <a
+        class="workspace-launch"
+        href="/workspaces"
+    >
+        Workspace
+    </a>
+
+
+    <a
+        class="task-center-launch"
+        href="/task-center"
+    >
+        Task Center
+    </a>
+
+
+    <a
+        class="system-health-launch"
+        href="/system-health"
+    >
+        System Health
+    </a>
+
+
+    <a
+        class="test-center-launch"
+        href="/test-center"
+    >
+        Test Center
+    </a>
+
+
+    <a
+        class="notification-center-launch"
+        href="/notifications"
+        aria-label="Notification Center"
+    >
+        Notifikasi
+    </a>
+
+    <script src="/static/notification_client.js"></script>
+
+
+    <script src="/static/billing_launcher.js"></script>
+
+
+    <script src="/static/billing_enforcement_client.js"></script>
+
+    <script src="/static/docurapi_ui_shell.js"></script>
+</body>
+</html>
