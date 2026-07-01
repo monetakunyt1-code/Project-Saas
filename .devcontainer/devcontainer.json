@@ -11,7 +11,7 @@
             "onAutoForward": "notify"
         }
     },
-    "postCreateCommand": "bash -lc 'bash scripts/codespaces_setup.sh'",
+    "postCreateCommand": "bash scripts/codespaces_setup.sh",
     "customizations": {
         "vscode": {
             "settings": {
