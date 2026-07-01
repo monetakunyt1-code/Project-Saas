@@ -1,0 +1,64 @@
+services:
+  docurapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: docurapi-app
+
+    restart: unless-stopped
+
+    init: true
+
+    ports:
+      - "${DOCURAPI_PORT:-8000}:8000"
+
+    environment:
+      PORT: "8000"
+
+      DOCURAPI_SECRET_KEY: "${DOCURAPI_SECRET_KEY:-}"
+      DOCURAPI_SESSION_SECRET: "${DOCURAPI_SESSION_SECRET:-}"
+      DOCURAPI_PAYMENT_WEBHOOK_SECRET: "${DOCURAPI_PAYMENT_WEBHOOK_SECRET:-}"
+
+      DOCURAPI_PUBLIC_BASE_URL: "${DOCURAPI_PUBLIC_BASE_URL:-}"
+      DOCURAPI_INTERNAL_BASE_URL: "${DOCURAPI_INTERNAL_BASE_URL:-http://127.0.0.1:8000}"
+
+      DOCURAPI_DATABASE_URL: "${DOCURAPI_DATABASE_URL:-}"
+      DATABASE_URL: "${DATABASE_URL:-}"
+      POSTGRES_URL: "${POSTGRES_URL:-}"
+
+      DOCURAPI_PAYMENT_MODE: "${DOCURAPI_PAYMENT_MODE:-disabled}"
+      DOCURAPI_MIDTRANS_ENV: "${DOCURAPI_MIDTRANS_ENV:-sandbox}"
+      DOCURAPI_MIDTRANS_SERVER_KEY: "${DOCURAPI_MIDTRANS_SERVER_KEY:-}"
+      DOCURAPI_MIDTRANS_CLIENT_KEY: "${DOCURAPI_MIDTRANS_CLIENT_KEY:-}"
+
+      DOCURAPI_COOKIE_SECURE: "${DOCURAPI_COOKIE_SECURE:-0}"
+      DOCURAPI_DEV_MODE: "${DOCURAPI_DEV_MODE:-0}"
+
+    volumes:
+      - docurapi_storage:/app/storage
+      - docurapi_logs:/app/logs
+
+    tmpfs:
+      - /tmp
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen(
+          'http://127.0.0.1:8000/api/plans',
+          timeout=4
+          )
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+
+volumes:
+  docurapi_storage:
+  docurapi_logs:

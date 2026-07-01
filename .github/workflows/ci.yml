@@ -1,0 +1,67 @@
+name: DocuRapi CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+
+permissions:
+  contents: read
+
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    env:
+      DOCURAPI_SECRET_KEY: >-
+        ci-docurapi-secret-8f42d9e0b6534c6f97a0d3e6c28f1b5a9a4c7e1d6f832b50
+      DOCURAPI_SESSION_SECRET: >-
+        ci-docurapi-session-c7e13b9a48f620d5e3a91c7b4f8652d0a9e347b61c528f90
+      DOCURAPI_PAYMENT_WEBHOOK_SECRET: >-
+        ci-docurapi-webhook-5d8e31a7b4c960f2e6a38d1c7b5290f4a6e187c35d942b80
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r requirements.txt
+
+      - name: Verify dependencies
+        run: |
+          python -m pip check
+
+      - name: Prepare runtime directories
+        run: |
+          mkdir -p storage logs
+
+      - name: Compile Python source
+        run: |
+          python -m compileall -q app.py services tests
+
+      - name: Run automated tests
+        run: |
+          python -m unittest discover \
+            -s tests \
+            -p "test_*.py" \
+            -v
