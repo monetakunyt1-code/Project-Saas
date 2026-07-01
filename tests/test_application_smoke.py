@@ -43,7 +43,26 @@ Path("logs").mkdir(
     exist_ok=True,
 )
 
-from app import app  # noqa: E402
+# Smoke test aplikasi harus tetap menggunakan SQLite sampai
+# compatibility adapter PostgreSQL Phase 2B diaktifkan.
+_DOCURAPI_DATABASE_ENV_NAMES = (
+    "DOCURAPI_DATABASE_URL",
+    "DATABASE_URL",
+    "POSTGRES_URL",
+)
+
+_DOCURAPI_SAVED_DATABASE_ENV = {
+    name: os.environ.pop(name)
+    for name in _DOCURAPI_DATABASE_ENV_NAMES
+    if name in os.environ
+}
+
+try:
+    from app import app  # noqa: E402
+finally:
+    os.environ.update(
+        _DOCURAPI_SAVED_DATABASE_ENV
+    )
 
 
 class ApplicationSmokeTest(unittest.TestCase):
