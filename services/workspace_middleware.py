@@ -203,7 +203,55 @@ async def read_response_body(
         else:
             chunks.append(chunk)
 
-    return b"".join(chunks)
+    return b"".join(_docurapi_body_chunk_to_bytes(chunk) for chunk in chunks)
+
+
+
+def _docurapi_body_chunk_to_bytes(chunk: object) -> bytes:
+    """Normalisasi response-body chunk menjadi bytes."""
+
+    if chunk is None:
+        return b""
+
+    if isinstance(chunk, bytes):
+        return chunk
+
+    if isinstance(chunk, bytearray):
+        return bytes(chunk)
+
+    if isinstance(chunk, memoryview):
+        return chunk.tobytes()
+
+    if isinstance(chunk, str):
+        return chunk.encode("utf-8")
+
+    if isinstance(chunk, tuple):
+        # Bentuk umum iterator ASGI:
+        # (body, more_body)
+        if (
+            len(chunk) == 2
+            and isinstance(chunk[1], bool)
+        ):
+            return _docurapi_body_chunk_to_bytes(
+                chunk[0]
+            )
+
+        return b"".join(
+            _docurapi_body_chunk_to_bytes(part)
+            for part in chunk
+        )
+
+    if isinstance(chunk, list):
+        return b"".join(
+            _docurapi_body_chunk_to_bytes(part)
+            for part in chunk
+        )
+
+    raise TypeError(
+        "Unsupported response body chunk type: "
+        f"{type(chunk).__module__}."
+        f"{type(chunk).__qualname__}"
+    )
 
 
 def rebuild_response(
