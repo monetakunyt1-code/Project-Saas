@@ -13,10 +13,36 @@ from services import database_adapter as database
 
 ROOT = Path(__file__).resolve().parents[1]
 
-MANIFEST_DATABASE = (
+_IS_VERCEL_RUNTIME = bool(
+    os.getenv("VERCEL")
+    or os.getenv("VERCEL_ENV")
+    or os.getenv("NOW_REGION")
+)
+
+_RUNTIME_ROOT = Path(
+    os.getenv(
+        "DOCURAPI_RUNTIME_ROOT",
+        "/tmp/docurapi-runtime",
+    )
+).resolve()
+
+_LOCAL_MANIFEST_DATABASE = (
     ROOT
     / "storage"
     / "docurapi.db"
+)
+
+MANIFEST_DATABASE = (
+    _RUNTIME_ROOT
+    / "sqlite"
+    / "storage_manifest.db"
+    if _IS_VERCEL_RUNTIME
+    else _LOCAL_MANIFEST_DATABASE
+)
+
+MANIFEST_DATABASE.parent.mkdir(
+    parents=True,
+    exist_ok=True,
 )
 
 

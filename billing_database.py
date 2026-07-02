@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import json
+import os
+
 from services import database_adapter as sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,10 +12,31 @@ BASE_DIR = Path(
     __file__
 ).resolve().parent
 
-BILLING_DIRECTORY = (
+_IS_VERCEL_RUNTIME = bool(
+    os.getenv("VERCEL")
+    or os.getenv("VERCEL_ENV")
+    or os.getenv("NOW_REGION")
+)
+
+_RUNTIME_ROOT = Path(
+    os.getenv(
+        "DOCURAPI_RUNTIME_ROOT",
+        "/tmp/docurapi-runtime",
+    )
+).resolve()
+
+_LOCAL_BILLING_DIRECTORY = (
     BASE_DIR
     / "storage"
     / "billing"
+)
+
+BILLING_DIRECTORY = (
+    _RUNTIME_ROOT
+    / "storage"
+    / "billing"
+    if _IS_VERCEL_RUNTIME
+    else _LOCAL_BILLING_DIRECTORY
 )
 
 BILLING_DATABASE_PATH = (
@@ -26,7 +48,6 @@ BILLING_DIRECTORY.mkdir(
     parents=True,
     exist_ok=True,
 )
-
 
 DEFAULT_PRODUCTS = [
     {

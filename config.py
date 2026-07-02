@@ -1,7 +1,20 @@
+import os
 from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent
+_IS_VERCEL_RUNTIME = bool(
+    os.getenv("VERCEL")
+    or os.getenv("VERCEL_ENV")
+    or os.getenv("NOW_REGION")
+)
+
+_RUNTIME_ROOT = Path(
+    os.getenv(
+        "DOCURAPI_RUNTIME_ROOT",
+        "/tmp/docurapi-runtime",
+    )
+).resolve()
 
 STORAGE_DIR = BASE_DIR / "storage"
 UPLOAD_DIR = STORAGE_DIR / "uploads"
@@ -11,7 +24,11 @@ HISTORY_DIR = STORAGE_DIR / "history"
 TEMPLATE_DIR = STORAGE_DIR / "templates"
 
 DATABASE_PATH = STORAGE_DIR / "docurapi.db"
-LOG_FILE = BASE_DIR / "logs" / "docurapi.log"
+LOG_FILE = (
+    _RUNTIME_ROOT / "logs" / "docurapi.log"
+    if _IS_VERCEL_RUNTIME
+    else BASE_DIR / "logs" / "docurapi.log"
+)
 
 MAX_FILE_SIZE = 20 * 1024 * 1024
 ALLOWED_EXTENSION = ".docx"
