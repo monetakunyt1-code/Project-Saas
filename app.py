@@ -1258,3 +1258,37 @@ del _docurapi_qris_existing_paths
 del _docurapi_qris_route
 del _docurapi_qris_path
 # END DOCURAPI_QRIS_MANUAL_ROUTES
+
+# DOCURAPI VERCEL OIDC REQUEST CONTEXT
+@app.middleware("http")
+async def _docurapi_vercel_oidc_request_context(
+    request,
+    call_next,
+):
+    try:
+        from vercel.headers import (
+            set_headers,
+        )
+
+        set_headers(
+            dict(
+                request.headers
+            )
+        )
+
+    except Exception:
+        set_headers = None
+
+    try:
+        return await call_next(
+            request
+        )
+
+    finally:
+        if set_headers is not None:
+            try:
+                set_headers(
+                    None
+                )
+            except Exception:
+                pass

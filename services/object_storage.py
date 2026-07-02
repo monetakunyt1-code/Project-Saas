@@ -1028,3 +1028,99 @@ def create_object_storage(
     raise ObjectStorageError(
         f"Backend object storage tidak didukung: {selected}"
     )
+
+# DOCURAPI VERCEL BLOB FACTORY ADAPTER
+import os as _docurapi_factory_os
+
+
+_original_backend_name = backend_name
+_original_create_object_storage = create_object_storage
+
+
+def backend_name():
+    raw_backend = (
+        _docurapi_factory_os.environ.get(
+            "DOCURAPI_OBJECT_STORAGE_BACKEND",
+            "",
+        )
+    )
+
+    normalized_backend = str(
+        raw_backend
+    ).strip().lower().replace(
+        "-",
+        "_",
+    )
+
+    if normalized_backend in {
+        "vercel",
+        "vercel_blob",
+        "vercelblob",
+        "blob",
+    }:
+        return "vercel_blob"
+
+    return _original_backend_name()
+
+
+def create_object_storage(
+    backend=None,
+):
+    selected = (
+        backend
+        if backend is not None
+        else backend_name()
+    )
+
+    normalized = str(
+        selected
+    ).strip().lower().replace(
+        "-",
+        "_",
+    )
+
+    if normalized in {
+        "vercel",
+        "vercel_blob",
+        "blob",
+    }:
+        from services.vercel_blob_storage import (
+            VercelBlobObjectStorage,
+        )
+
+        return VercelBlobObjectStorage()
+
+    if backend is None:
+        return _original_create_object_storage()
+
+    # Factory lama membaca backend dari environment dan
+    # tidak menerima parameter positional.
+    import os as _docurapi_os
+
+    _environment_name = (
+        "DOCURAPI_OBJECT_STORAGE_BACKEND"
+    )
+
+    _previous_backend = (
+        _docurapi_os.environ.get(
+            _environment_name
+        )
+    )
+
+    try:
+        _docurapi_os.environ[
+            _environment_name
+        ] = str(backend)
+
+        return _original_create_object_storage()
+
+    finally:
+        if _previous_backend is None:
+            _docurapi_os.environ.pop(
+                _environment_name,
+                None,
+            )
+        else:
+            _docurapi_os.environ[
+                _environment_name
+            ] = _previous_backend
