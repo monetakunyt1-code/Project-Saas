@@ -82,9 +82,9 @@ def main() -> None:
             "Jumlah database bukan tujuh."
         )
 
-    if totals["tables"] != 34:
+    if totals["tables"] != 35:
         raise RuntimeError(
-            "Jumlah tabel bukan 34."
+            "Jumlah tabel bukan 35."
         )
 
     report_path = Path(
