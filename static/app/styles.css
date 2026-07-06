@@ -124,3 +124,40 @@ button:hover,
   padding: 14px;
   line-height: 1.7;
 }
+
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid #e2e8f0;
+  backdrop-filter: blur(12px);
+}
+
+.brand {
+  font-weight: 800;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.navlinks {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.navlinks a {
+  color: #0369a1;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.navlinks a:hover {
+  text-decoration: underline;
+}
