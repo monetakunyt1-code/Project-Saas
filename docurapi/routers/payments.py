@@ -12,6 +12,7 @@ from docurapi.services.payment_service import (
     confirm_manual_payment,
     create_checkout,
     get_payment_status,
+    refresh_invoice,
     simulate_paid,
 )
 
@@ -21,6 +22,11 @@ router = APIRouter(prefix="/api/payments", tags=["payments"])
 @router.get("/{job_id}/checkout", response_model=PaymentCheckoutResponse)
 def checkout(job_id: str, token: str = Query(...)):
     return create_checkout(job_id=job_id, token=token)
+
+
+@router.post("/{job_id}/refresh-invoice", response_model=PaymentCheckoutResponse)
+def refresh_invoice_route(job_id: str, token: str = Query(...)):
+    return refresh_invoice(job_id=job_id, token=token)
 
 
 @router.get("/{job_id}/status", response_model=PaymentStatusResponse)

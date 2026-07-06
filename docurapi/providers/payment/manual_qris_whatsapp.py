@@ -11,6 +11,7 @@ from docurapi.db.payments_repository import (
     get_latest_payment_for_job,
     update_latest_payment_for_job,
 )
+from docurapi.services.invoice_service import is_invoice_expired
 
 
 class ManualQrisWhatsappPaymentProvider:
@@ -20,10 +21,11 @@ class ManualQrisWhatsappPaymentProvider:
         job_id = job["job_id"]
         amount = job.get("amount", 0)
         payment_status = job.get("payment_status", "unpaid")
+        invoice_expired = is_invoice_expired(job)
 
         latest_payment = get_latest_payment_for_job(job_id)
 
-        if not latest_payment or latest_payment["status"] in {"paid", "rejected", "failed"}:
+        if not latest_payment or latest_payment["status"] in {"paid", "rejected", "failed", "expired"}:
             latest_payment = create_payment_record(
                 job_id=job_id,
                 provider=self.provider_name,
@@ -34,8 +36,37 @@ class ManualQrisWhatsappPaymentProvider:
                     "mode": "manual_qris_whatsapp",
                     "merchant_name": settings.MERCHANT_NAME,
                     "qris_static_image_url": settings.QRIS_STATIC_IMAGE_URL,
+                    "invoice_expired": invoice_expired,
                 },
             )
+
+        if invoice_expired:
+            return {
+                "success": True,
+                "job_id": job_id,
+                "payment_id": latest_payment["payment_id"],
+                "provider": self.provider_name,
+                "payment_status": "expired",
+                "amount": amount,
+                "base_amount": job.get("base_amount", amount),
+                "unique_code": job.get("unique_code", 0),
+                "invoice_expires_at": job.get("invoice_expires_at"),
+                "invoice_expired": True,
+                "message": "Invoice pembayaran sudah kedaluwarsa. Silakan refresh invoice untuk mendapatkan nominal unik baru.",
+                "qris_type": "static",
+                "merchant_name": settings.MERCHANT_NAME,
+                "qris_static_image_url": settings.QRIS_STATIC_IMAGE_URL,
+                "payment_instruction": [
+                    "Invoice ini sudah kedaluwarsa.",
+                    "Jangan melakukan pembayaran dengan nominal lama.",
+                    "Klik refresh invoice untuk mendapatkan nominal pembayaran baru.",
+                ],
+                "proof_required": True,
+                "proof_allowed_extensions": sorted(settings.ALLOWED_PAYMENT_PROOF_EXTENSIONS),
+                "confirm_manual_url": None,
+                "refresh_invoice_url": f"/api/payments/{job_id}/refresh-invoice?token={token}",
+                "simulate_payment_url": None,
+            }
 
         return {
             "success": True,
@@ -47,6 +78,7 @@ class ManualQrisWhatsappPaymentProvider:
             "base_amount": job.get("base_amount", amount),
             "unique_code": job.get("unique_code", 0),
             "invoice_expires_at": job.get("invoice_expires_at"),
+            "invoice_expired": False,
             "message": "Silakan bayar melalui QRIS statis dengan nominal unik, lalu klik konfirmasi pembayaran.",
             "qris_type": "static",
             "merchant_name": settings.MERCHANT_NAME,
@@ -62,6 +94,7 @@ class ManualQrisWhatsappPaymentProvider:
             "proof_required": True,
             "proof_allowed_extensions": sorted(settings.ALLOWED_PAYMENT_PROOF_EXTENSIONS),
             "confirm_manual_url": f"/api/payments/{job_id}/confirm-manual?token={token}",
+            "refresh_invoice_url": f"/api/payments/{job_id}/refresh-invoice?token={token}",
             "simulate_payment_url": None,
         }
 
@@ -98,6 +131,8 @@ class ManualQrisWhatsappPaymentProvider:
                 "payer_name": payer_name,
                 "note": note,
                 "proof_uploaded": bool(proof_meta),
+                "invoice_amount": amount,
+                "unique_code": job.get("unique_code", 0),
             },
             proof_file_name=proof_meta.get("proof_file_name") if proof_meta else None,
             proof_path=proof_meta.get("proof_path") if proof_meta else None,
@@ -119,6 +154,9 @@ class ManualQrisWhatsappPaymentProvider:
             "payment_id": latest_payment["payment_id"],
             "payment_status": "pending_verification",
             "amount": amount,
+            "base_amount": job.get("base_amount", amount),
+            "unique_code": job.get("unique_code", 0),
+            "invoice_expires_at": job.get("invoice_expires_at"),
             "message": "Konfirmasi pembayaran diterima. Admin perlu memverifikasi pembayaran sebelum download dibuka.",
             "proof_uploaded": bool(proof_meta),
             "proof_file_name": proof_meta.get("proof_file_name") if proof_meta else None,

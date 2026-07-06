@@ -7,6 +7,7 @@ from docurapi.core.security import (
 from docurapi.core.settings import settings
 from docurapi.main import app
 from docurapi.services.payment_service import get_payment_provider
+from docurapi.services.invoice_service import build_invoice_fields
 from docurapi.services.processing_service import generate_unique_payment_amount
 
 client = TestClient(app)
@@ -106,3 +107,14 @@ def test_unique_payment_amount_generation():
     assert amount == base_amount + unique_code
     assert unique_code >= settings.UNIQUE_CODE_MIN
     assert unique_code <= settings.UNIQUE_CODE_MAX
+
+
+def test_invoice_fields_builder():
+    base_amount = 12000
+    fields = build_invoice_fields(base_amount)
+
+    assert fields["amount"] == fields["base_amount"] + fields["unique_code"]
+    assert fields["base_amount"] == base_amount
+    assert fields["unique_code"] >= settings.UNIQUE_CODE_MIN
+    assert fields["unique_code"] <= settings.UNIQUE_CODE_MAX
+    assert fields["invoice_expires_at"]

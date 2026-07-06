@@ -123,6 +123,59 @@ def mark_job_rejected(job_id: str, reason: str = "Pembayaran ditolak admin.") ->
         connection.commit()
 
 
+
+def update_job_invoice(
+    job_id: str,
+    base_amount: int,
+    unique_code: int,
+    amount: int,
+    invoice_expires_at: str,
+) -> None:
+    with connect() as connection:
+        connection.execute(
+            """
+            UPDATE jobs
+            SET base_amount = ?,
+                unique_code = ?,
+                amount = ?,
+                invoice_expires_at = ?,
+                payment_status = ?,
+                payment_reference = NULL,
+                paid_at = NULL,
+                rejected_at = NULL,
+                rejection_reason = NULL,
+                updated_at = ?
+            WHERE job_id = ?
+            """,
+            (
+                base_amount,
+                unique_code,
+                amount,
+                invoice_expires_at,
+                "unpaid",
+                utc_now(),
+                job_id,
+            ),
+        )
+        connection.commit()
+
+
+def mark_job_expired(job_id: str) -> None:
+    with connect() as connection:
+        connection.execute(
+            """
+            UPDATE jobs
+            SET payment_status = ?, updated_at = ?
+            WHERE job_id = ? AND payment_status NOT IN ('paid', 'pending_verification')
+            """,
+            (
+                "expired",
+                utc_now(),
+                job_id,
+            ),
+        )
+        connection.commit()
+
 def get_job(job_id: str) -> dict[str, Any] | None:
     with connect() as connection:
         row = connection.execute(

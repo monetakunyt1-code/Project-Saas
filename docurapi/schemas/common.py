@@ -42,6 +42,7 @@ class PaymentCheckoutResponse(BaseModel):
     base_amount: int | None = None
     unique_code: int | None = None
     invoice_expires_at: str | None = None
+    invoice_expired: bool | None = None
     message: str
     qris_type: str | None = None
     merchant_name: str | None = None
@@ -50,6 +51,7 @@ class PaymentCheckoutResponse(BaseModel):
     proof_required: bool | None = None
     proof_allowed_extensions: list[str] | None = None
     confirm_manual_url: str | None = None
+    refresh_invoice_url: str | None = None
     simulate_payment_url: str | None = None
 
 
@@ -59,6 +61,9 @@ class ManualPaymentConfirmResponse(BaseModel):
     payment_id: str | None = None
     payment_status: str
     amount: int
+    base_amount: int | None = None
+    unique_code: int | None = None
+    invoice_expires_at: str | None = None
     message: str
     proof_uploaded: bool = False
     proof_file_name: str | None = None
@@ -79,4 +84,8 @@ class PaymentStatusResponse(BaseModel):
     job_id: str
     job_payment_status: str
     amount: int
+    base_amount: int | None = None
+    unique_code: int | None = None
+    invoice_expires_at: str | None = None
+    invoice_expired: bool | None = None
     payments: list[dict[str, Any]]
