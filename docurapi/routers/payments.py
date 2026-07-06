@@ -8,6 +8,12 @@ from docurapi.schemas.common import (
     PaymentStatusResponse,
     PaymentSuccessResponse,
 )
+from docurapi.services.invoice_page_service import (
+    build_invoice_payload,
+    build_receipt_payload,
+    render_invoice_html,
+    render_receipt_html,
+)
 from docurapi.services.payment_service import (
     confirm_manual_payment,
     create_checkout,
@@ -18,6 +24,27 @@ from docurapi.services.payment_service import (
 
 router = APIRouter(prefix="/api/payments", tags=["payments"])
 
+
+
+
+@router.get("/{job_id}/invoice")
+def invoice_page(job_id: str, token: str = Query(...), format: str = Query("html")):
+    payload = build_invoice_payload(job_id=job_id, token=token)
+
+    if format.lower() == "json":
+        return payload
+
+    return render_invoice_html(payload)
+
+
+@router.get("/{job_id}/receipt")
+def receipt_page(job_id: str, token: str = Query(...), format: str = Query("html")):
+    payload = build_receipt_payload(job_id=job_id, token=token)
+
+    if format.lower() == "json":
+        return payload
+
+    return render_receipt_html(payload)
 
 @router.get("/{job_id}/checkout", response_model=PaymentCheckoutResponse)
 def checkout(job_id: str, token: str = Query(...)):

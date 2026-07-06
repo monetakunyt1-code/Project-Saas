@@ -209,3 +209,13 @@ def test_admin_payment_pending_with_header_secret():
 
     assert response.status_code == 200
     assert response.json()["success"] is True
+
+
+def test_invoice_unknown_job():
+    response = client.get("/api/payments/unknown-job/invoice?token=dummy&format=json")
+    assert response.status_code == 404
+
+
+def test_receipt_unknown_job():
+    response = client.get("/api/payments/unknown-job/receipt?token=dummy&format=json")
+    assert response.status_code == 404
