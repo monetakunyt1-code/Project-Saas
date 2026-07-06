@@ -219,3 +219,22 @@ def test_invoice_unknown_job():
 def test_receipt_unknown_job():
     response = client.get("/api/payments/unknown-job/receipt?token=dummy&format=json")
     assert response.status_code == 404
+
+
+def test_admin_system_readiness_requires_valid_secret():
+    response = client.get("/api/admin/system/readiness")
+    assert response.status_code == 403
+
+
+def test_admin_system_readiness_with_header_secret():
+    response = client.get(
+        "/api/admin/system/readiness",
+        headers={"X-Admin-Secret": settings.ADMIN_APPROVAL_SECRET},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "ready" in data
+    assert "checks" in data
+    assert "database" in data["checks"]
