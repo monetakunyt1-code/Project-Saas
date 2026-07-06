@@ -1,0 +1,400 @@
+:root {
+    --primary: #0f6b5d;
+    --primary-dark: #084d43;
+    --primary-soft: #e5f3ef;
+    --background: #f2f7f6;
+    --card: #ffffff;
+    --text: #172326;
+    --muted: #68787c;
+    --border: #dce7e4;
+    --danger: #b63b3b;
+    --danger-soft: #fff0f0;
+    --shadow:
+        0 16px 42px rgba(20, 74, 64, 0.09);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+.topbar {
+    padding: 17px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background: white;
+    border-bottom: 1px solid var(--border);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: var(--primary);
+    color: white;
+    font-weight: 900;
+}
+
+.brand small,
+.brand strong {
+    display: block;
+}
+
+.brand small {
+    color: var(--primary);
+    font-size: 10px;
+}
+
+.brand strong {
+    font-size: 21px;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+nav a {
+    padding: 9px 12px;
+    border-radius: 9px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.container {
+    width: min(1200px, calc(100% - 32px));
+    margin: 32px auto 80px;
+}
+
+.hero-card,
+.card {
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: white;
+    box-shadow: var(--shadow);
+}
+
+.hero-card {
+    padding: 28px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+}
+
+.hero-card h1 {
+    margin: 0 0 8px;
+}
+
+.hero-card p:last-child {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.eyebrow {
+    margin: 0 0 7px;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.55fr)
+        minmax(300px, 0.65fr);
+    gap: 20px;
+}
+
+.card {
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.card h2 {
+    margin-top: 0;
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+}
+
+.section-heading h2 {
+    margin-bottom: 5px;
+}
+
+.section-heading p {
+    margin: 0;
+    color: var(--muted);
+}
+
+button,
+.notification-action {
+    padding: 10px 13px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.secondary-button {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+.danger-button {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.notification-item {
+    padding: 17px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.notification-item:last-child {
+    border-bottom: 0;
+}
+
+.notification-item.unread {
+    padding-right: 12px;
+    border-right: 4px solid var(--primary);
+}
+
+.notification-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 900;
+}
+
+.notification-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.notification-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.notification-heading span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.notification-content p {
+    margin: 8px 0 12px;
+    color: #445458;
+    line-height: 1.5;
+}
+
+.notification-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.notification-actions button,
+.notification-actions a {
+    padding: 7px 9px;
+    font-size: 12px;
+}
+
+.status-box {
+    padding: 15px;
+    margin-bottom: 14px;
+    display: grid;
+    gap: 5px;
+    border-radius: 12px;
+    background: var(--primary-soft);
+}
+
+.status-box strong {
+    color: var(--primary-dark);
+}
+
+.status-box span,
+.hint {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.check-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.empty-state,
+.error-state {
+    padding: 26px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.empty-state {
+    background: #f7faf9;
+    color: var(--muted);
+}
+
+.error-state,
+.message.error {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.toast {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 1000;
+    max-width: 390px;
+    padding: 14px 17px;
+    border-radius: 11px;
+    background: var(--text);
+    color: white;
+    box-shadow: var(--shadow);
+}
+
+.reset-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+
+.reset-container {
+    width: min(460px, 100%);
+}
+
+.reset-card form {
+    display: grid;
+    gap: 15px;
+}
+
+.reset-card label {
+    display: grid;
+    gap: 7px;
+    font-weight: 700;
+}
+
+.reset-card input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+}
+
+.reset-brand {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.message {
+    margin-top: 15px;
+    padding: 13px;
+    border-radius: 9px;
+}
+
+.message.success {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 850px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .topbar,
+    .hero-card,
+    .section-heading,
+    .notification-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+
+.billing-center-launch {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 15px;
+    border-radius: 11px;
+    background: #0f6b5d;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 800;
+    box-shadow:
+        0 12px 28px rgba(15, 107, 93, 0.25);
+}
+
+.billing-center-launch:hover {
+    background: #084d43;
+}

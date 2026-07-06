@@ -49,7 +49,6 @@ def create_app() -> FastAPI:
     )
 
     static_path = settings.BASE_DIR / "static"
-
     if static_path.exists():
         app.mount("/static", StaticFiles(directory=static_path), name="static")
 
