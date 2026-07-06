@@ -43,3 +43,8 @@ def test_admin_pending_requires_valid_secret():
 def test_payment_provider_default_is_manual_qris_whatsapp():
     assert settings.PAYMENT_MODE in {"manual_qris_whatsapp", "manual_qris"}
     assert get_payment_provider().provider_name == "manual_qris_whatsapp"
+
+
+def test_env_settings_loaded():
+    assert settings.ADMIN_APPROVAL_SECRET
+    assert settings.PUBLIC_BASE_URL

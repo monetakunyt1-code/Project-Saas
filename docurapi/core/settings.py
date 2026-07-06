@@ -3,13 +3,19 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+load_dotenv(BASE_DIR / ".env")
+
 
 class Settings:
     APP_NAME = "DocuRapi"
-    APP_VERSION = "0.4.0-manual-qris-whatsapp"
+    APP_VERSION = "0.4.1-env-admin-pages"
     APP_DESCRIPTION = "Backend modular untuk preview dokumen, pembayaran QRIS manual, dan approval WhatsApp."
 
-    BASE_DIR = Path(__file__).resolve().parents[2]
+    BASE_DIR = BASE_DIR
 
     STORAGE_DIR = BASE_DIR / "storage"
     UPLOAD_DIR = STORAGE_DIR / "uploads"
@@ -35,7 +41,10 @@ class Settings:
     PUBLIC_BASE_URL = os.getenv("DOCURAPI_PUBLIC_BASE_URL", "http://127.0.0.1:8000")
     MERCHANT_NAME = os.getenv("DOCURAPI_MERCHANT_NAME", "DocuRapi Merchant")
     ADMIN_WHATSAPP = os.getenv("DOCURAPI_ADMIN_WHATSAPP", "")
-    ADMIN_APPROVAL_SECRET = os.getenv("DOCURAPI_ADMIN_APPROVAL_SECRET", "dev-admin-secret-change-me")
+    ADMIN_APPROVAL_SECRET = os.getenv(
+        "DOCURAPI_ADMIN_APPROVAL_SECRET",
+        "dev-admin-secret-change-me",
+    )
 
     QRIS_STATIC_IMAGE_URL = os.getenv(
         "DOCURAPI_QRIS_STATIC_IMAGE_URL",
