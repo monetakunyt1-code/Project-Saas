@@ -7,6 +7,7 @@ from docurapi.core.security import (
 from docurapi.core.settings import settings
 from docurapi.main import app
 from docurapi.services.payment_service import get_payment_provider
+from docurapi.services.pricing_service import get_available_prices, get_processing_price
 from docurapi.services.invoice_service import build_invoice_fields
 from docurapi.services.processing_service import generate_unique_payment_amount
 
@@ -118,3 +119,21 @@ def test_invoice_fields_builder():
     assert fields["unique_code"] >= settings.UNIQUE_CODE_MIN
     assert fields["unique_code"] <= settings.UNIQUE_CODE_MAX
     assert fields["invoice_expires_at"]
+
+
+def test_pricing_endpoint():
+    response = client.get("/api/pricing")
+
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+    assert response.json()["currency"] == "IDR"
+    assert response.json()["prices"]["format"] > 0
+
+
+def test_pricing_service_values():
+    prices = get_available_prices()
+
+    assert prices["analyze"] == settings.PRICE_ANALYZE
+    assert prices["format"] == settings.PRICE_FORMAT
+    assert prices["journal"] == settings.PRICE_JOURNAL
+    assert get_processing_price("format") == settings.PRICE_FORMAT

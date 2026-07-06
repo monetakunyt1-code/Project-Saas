@@ -45,6 +45,10 @@ class Settings:
     UNIQUE_CODE_MIN = int(os.getenv("DOCURAPI_UNIQUE_CODE_MIN", "101"))
     UNIQUE_CODE_MAX = int(os.getenv("DOCURAPI_UNIQUE_CODE_MAX", "999"))
 
+    PRICE_ANALYZE = int(os.getenv("DOCURAPI_PRICE_ANALYZE", "7000"))
+    PRICE_FORMAT = int(os.getenv("DOCURAPI_PRICE_FORMAT", "12000"))
+    PRICE_JOURNAL = int(os.getenv("DOCURAPI_PRICE_JOURNAL", "20000"))
+
     PUBLIC_BASE_URL = os.getenv("DOCURAPI_PUBLIC_BASE_URL", "http://127.0.0.1:8000")
     MERCHANT_NAME = os.getenv("DOCURAPI_MERCHANT_NAME", "DocuRapi Merchant")
     ADMIN_WHATSAPP = os.getenv("DOCURAPI_ADMIN_WHATSAPP", "")

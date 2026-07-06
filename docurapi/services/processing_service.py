@@ -17,18 +17,9 @@ from docurapi.services.document_analyzer import analyze_document
 from docurapi.services.document_formatter import apply_document_format
 from docurapi.services.file_service import safe_filename, save_upload, validate_docx
 from docurapi.services.journal_service import create_journal_draft
+from docurapi.services.pricing_service import get_processing_price
 from docurapi.services.invoice_service import calculate_invoice_expiry, generate_unique_payment_amount
 
-
-PRICE_TABLE = {
-    "analyze": 7000,
-    "format": 12000,
-    "journal": 20000,
-}
-
-
-def get_processing_price(mode: str) -> int:
-    return PRICE_TABLE.get(mode, PRICE_TABLE["format"])
 
 
 def generate_unique_payment_amount(base_amount: int) -> tuple[int, int]:

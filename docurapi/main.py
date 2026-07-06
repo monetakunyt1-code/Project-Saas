@@ -10,7 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 from docurapi.core.logging_config import logger
 from docurapi.core.settings import settings
 from docurapi.db.connection import initialize_database
-from docurapi.routers import admin_payments, health, jobs, payments, processing, templates
+from docurapi.routers import admin_payments, health, jobs, payments, pricing, processing, templates
 
 
 @asynccontextmanager
@@ -69,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(jobs.router)
     app.include_router(templates.router)
     app.include_router(payments.router)
+    app.include_router(pricing.router)
     app.include_router(admin_payments.router)
 
     return app
