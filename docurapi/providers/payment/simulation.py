@@ -61,6 +61,7 @@ class SimulationPaymentProvider:
         token: str,
         payer_name: str | None = None,
         note: str | None = None,
+        proof_meta: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         return self.simulate_paid(job, token)
 

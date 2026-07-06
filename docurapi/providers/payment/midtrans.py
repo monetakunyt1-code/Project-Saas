@@ -17,6 +17,7 @@ class MidtransPaymentProvider:
         token: str,
         payer_name: str | None = None,
         note: str | None = None,
+        proof_meta: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail="Konfirmasi manual tidak tersedia untuk Midtrans.")
 

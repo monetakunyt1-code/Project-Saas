@@ -15,6 +15,9 @@ def create_payment_record(
     external_reference: str | None = None,
     checkout_url: str | None = None,
     raw_payload: dict[str, Any] | None = None,
+    proof_file_name: str | None = None,
+    proof_path: str | None = None,
+    proof_content_type: str | None = None,
 ) -> dict[str, Any]:
     payment_id = uuid4().hex
     timestamp = utc_now()
@@ -25,9 +28,10 @@ def create_payment_record(
             INSERT INTO payments (
                 payment_id, job_id, provider, amount, status,
                 external_reference, checkout_url, raw_payload,
+                proof_file_name, proof_path, proof_content_type,
                 created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 payment_id,
@@ -38,6 +42,9 @@ def create_payment_record(
                 external_reference,
                 checkout_url,
                 json.dumps(raw_payload or {}, ensure_ascii=False),
+                proof_file_name,
+                proof_path,
+                proof_content_type,
                 timestamp,
                 timestamp,
             ),
@@ -99,6 +106,9 @@ def update_latest_payment_for_job(
     external_reference: str | None = None,
     raw_payload: dict[str, Any] | None = None,
     rejection_reason: str | None = None,
+    proof_file_name: str | None = None,
+    proof_path: str | None = None,
+    proof_content_type: str | None = None,
 ) -> dict[str, Any] | None:
     payment = get_latest_payment_for_job(job_id)
 
@@ -119,6 +129,9 @@ def update_latest_payment_for_job(
                 paid_at = ?,
                 rejected_at = ?,
                 rejection_reason = COALESCE(?, rejection_reason),
+                proof_file_name = COALESCE(?, proof_file_name),
+                proof_path = COALESCE(?, proof_path),
+                proof_content_type = COALESCE(?, proof_content_type),
                 updated_at = ?
             WHERE payment_id = ?
             """,
@@ -129,6 +142,9 @@ def update_latest_payment_for_job(
                 paid_at,
                 rejected_at,
                 rejection_reason,
+                proof_file_name,
+                proof_path,
+                proof_content_type,
                 timestamp,
                 payment["payment_id"],
             ),

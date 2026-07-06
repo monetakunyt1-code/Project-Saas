@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse
 from docurapi.services.admin_payment_service import (
     approve_payment,
     get_admin_payment_detail,
+    get_payment_proof_response,
     list_pending_payments,
     reject_payment,
 )
@@ -61,9 +62,7 @@ def render_admin_result_page(
           font-weight: bold;
           margin-bottom: 16px;
         }}
-        h1 {{
-          margin-top: 0;
-        }}
+        h1 {{ margin-top: 0; }}
         .meta {{
           background: #f8fafc;
           border: 1px solid #e2e8f0;
@@ -110,8 +109,29 @@ def pending_payments(
 
 
 @router.get("/{job_id}")
-def payment_detail(job_id: str, secret: str = Query(...)):
-    return get_admin_payment_detail(job_id=job_id, secret=secret)
+def payment_detail(
+    job_id: str,
+    secret: str | None = Query(None),
+    admin_token: str | None = Query(None),
+):
+    return get_admin_payment_detail(
+        job_id=job_id,
+        secret=secret,
+        admin_token=admin_token,
+    )
+
+
+@router.get("/{job_id}/proof")
+def payment_proof(
+    job_id: str,
+    secret: str | None = Query(None),
+    admin_token: str | None = Query(None),
+):
+    return get_payment_proof_response(
+        job_id=job_id,
+        secret=secret,
+        admin_token=admin_token,
+    )
 
 
 @router.get("/{job_id}/approve")
@@ -120,11 +140,7 @@ def approve_payment_by_link(
     secret: str | None = Query(None),
     admin_token: str | None = Query(None),
 ):
-    result = approve_payment(
-        job_id=job_id,
-        secret=secret,
-        admin_token=admin_token,
-    )
+    result = approve_payment(job_id=job_id, secret=secret, admin_token=admin_token)
 
     extra = f"""
       <div class="meta">
@@ -150,11 +166,7 @@ def approve_payment_by_post(
     secret: str | None = Query(None),
     admin_token: str | None = Query(None),
 ):
-    return approve_payment(
-        job_id=job_id,
-        secret=secret,
-        admin_token=admin_token,
-    )
+    return approve_payment(job_id=job_id, secret=secret, admin_token=admin_token)
 
 
 @router.get("/{job_id}/reject")

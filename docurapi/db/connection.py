@@ -94,6 +94,9 @@ def initialize_database() -> None:
                 paid_at TEXT,
                 rejected_at TEXT,
                 rejection_reason TEXT,
+                proof_file_name TEXT,
+                proof_path TEXT,
+                proof_content_type TEXT,
                 FOREIGN KEY(job_id) REFERENCES jobs(job_id) ON DELETE CASCADE
             )
             """
@@ -101,6 +104,9 @@ def initialize_database() -> None:
 
         add_column_if_missing(connection, "payments", "rejected_at", "TEXT")
         add_column_if_missing(connection, "payments", "rejection_reason", "TEXT")
+        add_column_if_missing(connection, "payments", "proof_file_name", "TEXT")
+        add_column_if_missing(connection, "payments", "proof_path", "TEXT")
+        add_column_if_missing(connection, "payments", "proof_content_type", "TEXT")
 
         connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)")
         connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_payment_status ON jobs(payment_status)")

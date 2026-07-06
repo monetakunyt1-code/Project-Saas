@@ -44,6 +44,11 @@ def test_admin_pending_requires_valid_secret():
     assert response.status_code == 403
 
 
+def test_admin_proof_unknown_without_access():
+    response = client.get("/api/admin/payments/unknown/proof")
+    assert response.status_code == 403
+
+
 def test_payment_provider_default_is_manual_qris_whatsapp():
     assert settings.PAYMENT_MODE in {"manual_qris_whatsapp", "manual_qris"}
     assert get_payment_provider().provider_name == "manual_qris_whatsapp"
@@ -52,6 +57,7 @@ def test_payment_provider_default_is_manual_qris_whatsapp():
 def test_env_settings_loaded():
     assert settings.ADMIN_APPROVAL_SECRET
     assert settings.PUBLIC_BASE_URL
+    assert settings.PAYMENT_PROOF_DIR.exists()
 
 
 def test_admin_action_token_validation():
@@ -71,6 +77,22 @@ def test_admin_action_token_validation():
 
     assert not verify_admin_action_token(
         job_id="other-job",
+        action="approve",
+        token=token,
+    )
+
+
+def test_admin_view_token_validation():
+    token = create_admin_action_token(job_id="job-test", action="view")
+
+    assert verify_admin_action_token(
+        job_id="job-test",
+        action="view",
+        token=token,
+    )
+
+    assert not verify_admin_action_token(
+        job_id="job-test",
         action="approve",
         token=token,
     )

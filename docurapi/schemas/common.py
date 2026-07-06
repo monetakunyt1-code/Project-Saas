@@ -41,6 +41,8 @@ class PaymentCheckoutResponse(BaseModel):
     merchant_name: str | None = None
     qris_static_image_url: str | None = None
     payment_instruction: list[str] | None = None
+    proof_required: bool | None = None
+    proof_allowed_extensions: list[str] | None = None
     confirm_manual_url: str | None = None
     simulate_payment_url: str | None = None
 
@@ -52,6 +54,8 @@ class ManualPaymentConfirmResponse(BaseModel):
     payment_status: str
     amount: int
     message: str
+    proof_uploaded: bool = False
+    proof_file_name: str | None = None
     admin_whatsapp_url: str | None = None
 
 

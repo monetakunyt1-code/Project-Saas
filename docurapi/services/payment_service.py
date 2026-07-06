@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 
 from docurapi.core.settings import settings
 from docurapi.db.jobs_repository import get_job
@@ -11,6 +13,7 @@ from docurapi.providers.payment.manual_qris_whatsapp import ManualQrisWhatsappPa
 from docurapi.providers.payment.midtrans import MidtransPaymentProvider
 from docurapi.providers.payment.simulation import SimulationPaymentProvider
 from docurapi.providers.payment.xendit import XenditPaymentProvider
+from docurapi.services.file_service import safe_filename
 
 
 def get_payment_provider():
@@ -54,21 +57,65 @@ def ensure_payment_access(job_id: str, token: str) -> dict[str, Any]:
     return job
 
 
+async def save_payment_proof(job_id: str, proof_file: UploadFile | None) -> dict[str, Any] | None:
+    if not proof_file or not proof_file.filename:
+        return None
+
+    original_name = safe_filename(proof_file.filename)
+    suffix = Path(original_name).suffix.lower()
+
+    if suffix not in settings.ALLOWED_PAYMENT_PROOF_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail="Bukti pembayaran harus berupa JPG, JPEG, PNG, WEBP, atau PDF.",
+        )
+
+    content = await proof_file.read()
+
+    if not content:
+        return None
+
+    if len(content) > settings.MAX_PAYMENT_PROOF_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail="Ukuran bukti pembayaran melebihi batas 5 MB.",
+        )
+
+    destination = settings.PAYMENT_PROOF_DIR / f"{job_id}_{uuid4().hex}_{original_name}"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(content)
+
+    return {
+        "proof_file_name": original_name,
+        "proof_path": str(destination),
+        "proof_content_type": proof_file.content_type or "application/octet-stream",
+    }
+
+
 def create_checkout(job_id: str, token: str) -> dict[str, Any]:
     job = ensure_payment_access(job_id, token)
     provider = get_payment_provider()
     return provider.create_checkout(job, token)
 
 
-def confirm_manual_payment(
+async def confirm_manual_payment(
     job_id: str,
     token: str,
     payer_name: str | None = None,
     note: str | None = None,
+    proof_file: UploadFile | None = None,
 ) -> dict[str, Any]:
     job = ensure_payment_access(job_id, token)
     provider = get_payment_provider()
-    return provider.confirm_manual_payment(job, token, payer_name, note)
+    proof_meta = await save_payment_proof(job_id=job_id, proof_file=proof_file)
+
+    return provider.confirm_manual_payment(
+        job=job,
+        token=token,
+        payer_name=payer_name,
+        note=note,
+        proof_meta=proof_meta,
+    )
 
 
 def simulate_paid(job_id: str, token: str) -> dict[str, Any]:

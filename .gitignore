@@ -36,3 +36,6 @@ add_guest_payment_flow.sh
 .DS_Store
 Thumbs.db
 .vscode/
+storage/payment_proofs/
+backup_payment_proof_upload_*/
+add_payment_proof_upload.sh

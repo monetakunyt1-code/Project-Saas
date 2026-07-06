@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Form, Query
+from fastapi import APIRouter, File, Form, Query, UploadFile
 
 from docurapi.schemas.common import (
     ManualPaymentConfirmResponse,
@@ -29,17 +29,19 @@ def payment_status(job_id: str, token: str = Query(...)):
 
 
 @router.post("/{job_id}/confirm-manual", response_model=ManualPaymentConfirmResponse)
-def confirm_manual(
+async def confirm_manual(
     job_id: str,
     token: str = Query(...),
     payer_name: str | None = Form(None),
     note: str | None = Form(None),
+    proof_file: UploadFile | None = File(None),
 ):
-    return confirm_manual_payment(
+    return await confirm_manual_payment(
         job_id=job_id,
         token=token,
         payer_name=payer_name,
         note=note,
+        proof_file=proof_file,
     )
 
 
