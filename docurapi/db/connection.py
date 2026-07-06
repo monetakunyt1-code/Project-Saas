@@ -18,6 +18,23 @@ def connect() -> sqlite3.Connection:
     return connection
 
 
+def column_exists(connection: sqlite3.Connection, table_name: str, column_name: str) -> bool:
+    rows = connection.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return any(row["name"] == column_name for row in rows)
+
+
+def add_column_if_missing(
+    connection: sqlite3.Connection,
+    table_name: str,
+    column_name: str,
+    column_definition: str,
+) -> None:
+    if not column_exists(connection, table_name, column_name):
+        connection.execute(
+            f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}"
+        )
+
+
 def initialize_database() -> None:
     with connect() as connection:
         connection.execute(
@@ -53,8 +70,47 @@ def initialize_database() -> None:
             """
         )
 
+        add_column_if_missing(
+            connection,
+            "jobs",
+            "payment_status",
+            "TEXT NOT NULL DEFAULT 'unpaid'",
+        )
+
+        add_column_if_missing(
+            connection,
+            "jobs",
+            "payment_reference",
+            "TEXT",
+        )
+
+        add_column_if_missing(
+            connection,
+            "jobs",
+            "amount",
+            "INTEGER NOT NULL DEFAULT 0",
+        )
+
+        add_column_if_missing(
+            connection,
+            "jobs",
+            "paid_at",
+            "TEXT",
+        )
+
+        add_column_if_missing(
+            connection,
+            "jobs",
+            "access_token",
+            "TEXT",
+        )
+
         connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)"
+        )
+
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_jobs_payment_status ON jobs(payment_status)"
         )
 
         connection.execute(

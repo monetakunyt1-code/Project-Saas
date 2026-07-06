@@ -8,7 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 from docurapi.core.logging_config import logger
 from docurapi.core.settings import settings
 from docurapi.db.connection import initialize_database
-from docurapi.routers import health, jobs, processing, templates
+from docurapi.routers import health, jobs, payments, processing, templates
 
 
 def create_app() -> FastAPI:
@@ -62,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(processing.router)
     app.include_router(jobs.router)
     app.include_router(templates.router)
+    app.include_router(payments.router)
 
     return app
 

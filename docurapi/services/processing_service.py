@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import secrets
 import shutil
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,17 @@ from docurapi.services.document_analyzer import analyze_document
 from docurapi.services.document_formatter import apply_document_format
 from docurapi.services.file_service import safe_filename, save_upload, validate_docx
 from docurapi.services.journal_service import create_journal_draft
+
+
+PRICE_TABLE = {
+    "analyze": 7000,
+    "format": 12000,
+    "journal": 20000,
+}
+
+
+def get_processing_price(mode: str) -> int:
+    return PRICE_TABLE.get(mode, PRICE_TABLE["format"])
 
 
 def write_report(report_path: Path, payload: dict[str, Any]) -> None:
@@ -41,7 +53,9 @@ async def process_uploaded_document(
         )
 
     job_id = uuid4().hex
+    access_token = secrets.token_urlsafe(32)
     original_name = safe_filename(file.filename or "document.docx")
+    amount = get_processing_price(normalized_mode)
 
     input_path = settings.UPLOAD_DIR / f"{job_id}_{original_name}"
 
@@ -64,6 +78,8 @@ async def process_uploaded_document(
             mode=normalized_mode,
             preset=preset,
             input_size=input_size,
+            amount=amount,
+            access_token=access_token,
         )
 
         analysis_before = analyze_document(input_path)
@@ -85,6 +101,8 @@ async def process_uploaded_document(
             "original_name": original_name,
             "mode": normalized_mode,
             "preset": preset,
+            "payment_status": "unpaid",
+            "amount": amount,
             "analysis_before": analysis_before,
             "processing": processing_result,
             "analysis_after": analysis_after,
@@ -101,14 +119,18 @@ async def process_uploaded_document(
 
         input_path.unlink(missing_ok=True)
 
-        logger.info("Job %s selesai. Mode=%s", job_id, normalized_mode)
+        logger.info("Job %s selesai. Mode=%s Payment=unpaid", job_id, normalized_mode)
 
         return {
             "success": True,
             "job_id": job_id,
-            "message": "Dokumen berhasil diproses.",
-            "download_url": f"/api/jobs/{job_id}/download",
-            "report_url": f"/api/jobs/{job_id}/report",
+            "message": "Dokumen berhasil diproses. Preview tersedia, download dibuka setelah pembayaran.",
+            "preview_url": f"/api/jobs/{job_id}/preview?token={access_token}",
+            "report_url": f"/api/jobs/{job_id}/report?token={access_token}",
+            "payment_url": f"/api/payments/{job_id}/checkout?token={access_token}",
+            "download_url": None,
+            "payment_status": "unpaid",
+            "amount": amount,
             "summary": analysis_after["summary"],
         }
 

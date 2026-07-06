@@ -24,3 +24,9 @@ def test_templates_list():
 
     assert response.status_code == 200
     assert "templates" in response.json()
+
+
+def test_payment_checkout_unknown_job():
+    response = client.get("/api/payments/unknown-job/checkout?token=dummy")
+
+    assert response.status_code == 404

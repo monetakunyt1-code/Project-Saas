@@ -13,6 +13,8 @@ def create_job(
     mode: str,
     preset: str,
     input_size: int = 0,
+    amount: int = 0,
+    access_token: str | None = None,
 ) -> None:
     timestamp = utc_now()
 
@@ -21,9 +23,10 @@ def create_job(
             """
             INSERT INTO jobs (
                 job_id, original_name, mode, preset, status,
-                input_size, created_at, updated_at
+                input_size, amount, payment_status, access_token,
+                created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 job_id,
@@ -32,6 +35,9 @@ def create_job(
                 preset,
                 "processing",
                 input_size,
+                amount,
+                "unpaid",
+                access_token,
                 timestamp,
                 timestamp,
             ),
@@ -76,6 +82,25 @@ def fail_job(job_id: str, error_message: str) -> None:
             (
                 "failed",
                 error_message[:2000],
+                utc_now(),
+                job_id,
+            ),
+        )
+        connection.commit()
+
+
+def mark_job_paid(job_id: str, payment_reference: str) -> None:
+    with connect() as connection:
+        connection.execute(
+            """
+            UPDATE jobs
+            SET payment_status = ?, payment_reference = ?, paid_at = ?, updated_at = ?
+            WHERE job_id = ?
+            """,
+            (
+                "paid",
+                payment_reference,
+                utc_now(),
                 utc_now(),
                 job_id,
             ),
