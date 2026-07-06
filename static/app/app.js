@@ -73,6 +73,7 @@ uploadForm.addEventListener("submit", async (event) => {
         <a class="button" href="${data.preview_url}" target="_blank">Lihat Preview</a>
         <a class="button" href="${data.report_url}" target="_blank">Lihat Report</a>
         <a class="button" href="/api/payments/${data.job_id}/invoice?token=${currentToken}" target="_blank">Lihat Invoice</a>
+        <a class="button" href="/static/app/status.html?job_id=${data.job_id}&token=${currentToken}" target="_blank">Cek Status</a>
         <a class="button" href="${data.payment_url}" target="_blank">Checkout JSON</a>
       </div>
     `;
@@ -118,6 +119,7 @@ confirmForm.addEventListener("submit", async (event) => {
         <p>${message}</p>
         <div class="actions">
           <a class="button" href="${data.admin_whatsapp_url}" target="_blank">Buka WhatsApp Admin</a>
+          <a class="button" href="/static/app/status.html?job_id=${currentJobId}&token=${currentToken}" target="_blank">Cek Status Pembayaran</a>
         </div>
       `;
       confirmResult.classList.remove("hidden");
