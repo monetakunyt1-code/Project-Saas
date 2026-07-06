@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Reset DocuRapi Cache</title>
+</head>
+<body>
+  <h1>Membersihkan cache DocuRapi...</h1>
+  <p>Mohon tunggu. Halaman akan diarahkan ulang ke UI baru.</p>
+
+  <script>
+    async function resetBrowserCache() {
+      try {
+        if ("serviceWorker" in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            await registration.unregister();
+          }
+        }
+
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          for (const key of keys) {
+            await caches.delete(key);
+          }
+        }
+
+        sessionStorage.clear();
+
+        window.location.replace("/?fresh=" + Date.now());
+      } catch (error) {
+        document.body.innerHTML += "<pre>" + error.message + "</pre>";
+        window.location.replace("/?fresh=" + Date.now());
+      }
+    }
+
+    resetBrowserCache();
+  </script>
+</body>
+</html>

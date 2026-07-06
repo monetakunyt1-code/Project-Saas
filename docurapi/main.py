@@ -48,8 +48,31 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    static_path = settings.BASE_DIR / "static"
+    @app.middleware("http")
+    async def prevent_legacy_ui_cache(request, call_next):
+        response = await call_next(request)
 
+        path = request.url.path
+
+        if (
+            path == "/"
+            or path.startswith("/static/app/")
+            or path in {
+                "/static/index.html",
+                "/static/app.js",
+                "/static/background_client.js",
+                "/static/notification_client.js",
+                "/static/reset_browser.html",
+                "/admin",
+            }
+        ):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+
+        return response
+
+    static_path = settings.BASE_DIR / "static"
     if static_path.exists():
         app.mount("/static", StaticFiles(directory=static_path), name="static")
 
