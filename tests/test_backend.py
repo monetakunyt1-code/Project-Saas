@@ -1,5 +1,9 @@
 from fastapi.testclient import TestClient
 
+from docurapi.core.security import (
+    create_admin_action_token,
+    verify_admin_action_token,
+)
 from docurapi.core.settings import settings
 from docurapi.main import app
 from docurapi.services.payment_service import get_payment_provider
@@ -48,3 +52,25 @@ def test_payment_provider_default_is_manual_qris_whatsapp():
 def test_env_settings_loaded():
     assert settings.ADMIN_APPROVAL_SECRET
     assert settings.PUBLIC_BASE_URL
+
+
+def test_admin_action_token_validation():
+    token = create_admin_action_token(job_id="job-test", action="approve")
+
+    assert verify_admin_action_token(
+        job_id="job-test",
+        action="approve",
+        token=token,
+    )
+
+    assert not verify_admin_action_token(
+        job_id="job-test",
+        action="reject",
+        token=token,
+    )
+
+    assert not verify_admin_action_token(
+        job_id="other-job",
+        action="approve",
+        token=token,
+    )

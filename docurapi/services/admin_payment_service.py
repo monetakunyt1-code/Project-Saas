@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi import HTTPException
 
+from docurapi.core.security import verify_admin_action_token
 from docurapi.core.settings import settings
 from docurapi.db.jobs_repository import (
     get_job,
@@ -23,6 +24,25 @@ def ensure_admin_secret(secret: str) -> None:
         raise HTTPException(status_code=403, detail="Secret admin tidak valid.")
 
 
+def ensure_admin_action_access(
+    job_id: str,
+    action: str,
+    secret: str | None = None,
+    admin_token: str | None = None,
+) -> None:
+    if admin_token and verify_admin_action_token(job_id=job_id, action=action, token=admin_token):
+        return
+
+    if secret:
+        ensure_admin_secret(secret)
+        return
+
+    raise HTTPException(
+        status_code=403,
+        detail="Akses admin tidak valid.",
+    )
+
+
 def list_pending_payments(secret: str, limit: int = 25) -> dict:
     ensure_admin_secret(secret)
 
@@ -35,8 +55,17 @@ def list_pending_payments(secret: str, limit: int = 25) -> dict:
     }
 
 
-def approve_payment(job_id: str, secret: str) -> dict:
-    ensure_admin_secret(secret)
+def approve_payment(
+    job_id: str,
+    secret: str | None = None,
+    admin_token: str | None = None,
+) -> dict:
+    ensure_admin_action_access(
+        job_id=job_id,
+        action="approve",
+        secret=secret,
+        admin_token=admin_token,
+    )
 
     job = get_job(job_id)
 
@@ -51,7 +80,7 @@ def approve_payment(job_id: str, secret: str) -> dict:
         external_reference=payment_reference,
         raw_payload={
             "event": "admin_approve_manual_qris",
-            "approved_by": "admin_secret_link",
+            "approved_by": "admin_action_token",
         },
     )
 
@@ -67,8 +96,18 @@ def approve_payment(job_id: str, secret: str) -> dict:
     }
 
 
-def reject_payment(job_id: str, secret: str, reason: str = "Pembayaran tidak ditemukan atau tidak sesuai.") -> dict:
-    ensure_admin_secret(secret)
+def reject_payment(
+    job_id: str,
+    secret: str | None = None,
+    admin_token: str | None = None,
+    reason: str = "Pembayaran tidak ditemukan atau tidak sesuai.",
+) -> dict:
+    ensure_admin_action_access(
+        job_id=job_id,
+        action="reject",
+        secret=secret,
+        admin_token=admin_token,
+    )
 
     job = get_job(job_id)
 

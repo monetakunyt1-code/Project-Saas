@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 
+from docurapi.core.security import create_admin_action_token
 from docurapi.core.settings import settings
 from docurapi.db.jobs_repository import mark_job_pending_verification
 from docurapi.db.payments_repository import (
@@ -95,7 +96,6 @@ class ManualQrisWhatsappPaymentProvider:
 
         admin_whatsapp_url = self._build_admin_whatsapp_url(
             job=job,
-            token=token,
             payer_name=payer_name,
             note=note,
         )
@@ -116,7 +116,6 @@ class ManualQrisWhatsappPaymentProvider:
     def _build_admin_whatsapp_url(
         self,
         job: dict[str, Any],
-        token: str,
         payer_name: str | None,
         note: str | None,
     ) -> str | None:
@@ -127,10 +126,19 @@ class ManualQrisWhatsappPaymentProvider:
 
         job_id = job["job_id"]
         public_base = settings.PUBLIC_BASE_URL.rstrip("/")
-        secret = quote(settings.ADMIN_APPROVAL_SECRET, safe="")
 
-        approve_url = f"{public_base}/api/admin/payments/{job_id}/approve?secret={secret}"
-        reject_url = f"{public_base}/api/admin/payments/{job_id}/reject?secret={secret}"
+        approve_token = quote(
+            create_admin_action_token(job_id=job_id, action="approve"),
+            safe="",
+        )
+
+        reject_token = quote(
+            create_admin_action_token(job_id=job_id, action="reject"),
+            safe="",
+        )
+
+        approve_url = f"{public_base}/api/admin/payments/{job_id}/approve?admin_token={approve_token}"
+        reject_url = f"{public_base}/api/admin/payments/{job_id}/reject?admin_token={reject_token}"
 
         message = (
             "Konfirmasi pembayaran DocuRapi\n\n"

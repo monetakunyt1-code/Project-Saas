@@ -28,7 +28,6 @@ def render_admin_result_page(
     safe_message = escape(message)
     safe_job_id = escape(job_id)
     safe_payment_status = escape(payment_status)
-    safe_extra = extra
 
     html = f"""
     <!doctype html>
@@ -72,6 +71,7 @@ def render_admin_result_page(
           padding: 16px;
           margin-top: 18px;
           line-height: 1.7;
+          overflow-wrap: anywhere;
         }}
         .note {{
           margin-top: 18px;
@@ -89,7 +89,7 @@ def render_admin_result_page(
           <strong>Job ID:</strong> {safe_job_id}<br>
           <strong>Status pembayaran:</strong> {safe_payment_status}
         </div>
-        {safe_extra}
+        {extra}
         <p class="note">
           Kamu bisa menutup halaman ini. Status dokumen sudah diperbarui di backend DocuRapi.
         </p>
@@ -115,8 +115,16 @@ def payment_detail(job_id: str, secret: str = Query(...)):
 
 
 @router.get("/{job_id}/approve")
-def approve_payment_by_link(job_id: str, secret: str = Query(...)):
-    result = approve_payment(job_id=job_id, secret=secret)
+def approve_payment_by_link(
+    job_id: str,
+    secret: str | None = Query(None),
+    admin_token: str | None = Query(None),
+):
+    result = approve_payment(
+        job_id=job_id,
+        secret=secret,
+        admin_token=admin_token,
+    )
 
     extra = f"""
       <div class="meta">
@@ -137,17 +145,31 @@ def approve_payment_by_link(job_id: str, secret: str = Query(...)):
 
 
 @router.post("/{job_id}/approve")
-def approve_payment_by_post(job_id: str, secret: str = Query(...)):
-    return approve_payment(job_id=job_id, secret=secret)
+def approve_payment_by_post(
+    job_id: str,
+    secret: str | None = Query(None),
+    admin_token: str | None = Query(None),
+):
+    return approve_payment(
+        job_id=job_id,
+        secret=secret,
+        admin_token=admin_token,
+    )
 
 
 @router.get("/{job_id}/reject")
 def reject_payment_by_link(
     job_id: str,
-    secret: str = Query(...),
+    secret: str | None = Query(None),
+    admin_token: str | None = Query(None),
     reason: str = Query("Pembayaran tidak ditemukan atau tidak sesuai."),
 ):
-    result = reject_payment(job_id=job_id, secret=secret, reason=reason)
+    result = reject_payment(
+        job_id=job_id,
+        secret=secret,
+        admin_token=admin_token,
+        reason=reason,
+    )
 
     extra = f"""
       <div class="meta">
@@ -168,7 +190,13 @@ def reject_payment_by_link(
 @router.post("/{job_id}/reject")
 def reject_payment_by_post(
     job_id: str,
-    secret: str = Query(...),
+    secret: str | None = Query(None),
+    admin_token: str | None = Query(None),
     reason: str = Form("Pembayaran tidak ditemukan atau tidak sesuai."),
 ):
-    return reject_payment(job_id=job_id, secret=secret, reason=reason)
+    return reject_payment(
+        job_id=job_id,
+        secret=secret,
+        admin_token=admin_token,
+        reason=reason,
+    )
