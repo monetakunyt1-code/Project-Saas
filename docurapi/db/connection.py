@@ -56,6 +56,14 @@ def initialize_database() -> None:
             """
         )
 
+        add_column_if_missing(connection, "jobs", "payment_status", "TEXT NOT NULL DEFAULT 'unpaid'")
+        add_column_if_missing(connection, "jobs", "payment_reference", "TEXT")
+        add_column_if_missing(connection, "jobs", "amount", "INTEGER NOT NULL DEFAULT 0")
+        add_column_if_missing(connection, "jobs", "paid_at", "TEXT")
+        add_column_if_missing(connection, "jobs", "access_token", "TEXT")
+        add_column_if_missing(connection, "jobs", "rejected_at", "TEXT")
+        add_column_if_missing(connection, "jobs", "rejection_reason", "TEXT")
+
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS templates (
@@ -68,41 +76,6 @@ def initialize_database() -> None:
                 created_at TEXT NOT NULL
             )
             """
-        )
-
-        add_column_if_missing(
-            connection,
-            "jobs",
-            "payment_status",
-            "TEXT NOT NULL DEFAULT 'unpaid'",
-        )
-
-        add_column_if_missing(
-            connection,
-            "jobs",
-            "payment_reference",
-            "TEXT",
-        )
-
-        add_column_if_missing(
-            connection,
-            "jobs",
-            "amount",
-            "INTEGER NOT NULL DEFAULT 0",
-        )
-
-        add_column_if_missing(
-            connection,
-            "jobs",
-            "paid_at",
-            "TEXT",
-        )
-
-        add_column_if_missing(
-            connection,
-            "jobs",
-            "access_token",
-            "TEXT",
         )
 
         connection.execute(
@@ -119,33 +92,21 @@ def initialize_database() -> None:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
                 paid_at TEXT,
+                rejected_at TEXT,
+                rejection_reason TEXT,
                 FOREIGN KEY(job_id) REFERENCES jobs(job_id) ON DELETE CASCADE
             )
             """
         )
 
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)"
-        )
+        add_column_if_missing(connection, "payments", "rejected_at", "TEXT")
+        add_column_if_missing(connection, "payments", "rejection_reason", "TEXT")
 
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_jobs_payment_status ON jobs(payment_status)"
-        )
-
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_templates_created_at ON templates(created_at DESC)"
-        )
-
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_payments_job_id ON payments(job_id)"
-        )
-
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)"
-        )
-
-        connection.execute(
-            "CREATE INDEX IF NOT EXISTS idx_payments_external_reference ON payments(external_reference)"
-        )
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_payment_status ON jobs(payment_status)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_templates_created_at ON templates(created_at DESC)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_payments_job_id ON payments(job_id)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_payments_external_reference ON payments(external_reference)")
 
         connection.commit()

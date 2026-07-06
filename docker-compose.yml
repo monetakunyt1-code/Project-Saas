@@ -10,7 +10,12 @@ services:
     environment:
       PORT: "8000"
       DOCURAPI_DEV_MODE: "1"
-      DOCURAPI_PAYMENT_MODE: "simulation"
+      DOCURAPI_PAYMENT_MODE: "manual_qris_whatsapp"
+      DOCURAPI_PUBLIC_BASE_URL: "http://127.0.0.1:8000"
+      DOCURAPI_MERCHANT_NAME: "DocuRapi Merchant"
+      DOCURAPI_ADMIN_WHATSAPP: "${DOCURAPI_ADMIN_WHATSAPP:-}"
+      DOCURAPI_ADMIN_APPROVAL_SECRET: "${DOCURAPI_ADMIN_APPROVAL_SECRET:-dev-admin-secret-change-me}"
+      DOCURAPI_QRIS_STATIC_IMAGE_URL: "/static/payment/qris-shopee.png"
     volumes:
       - docurapi_storage:/app/storage
       - docurapi_logs:/app/logs

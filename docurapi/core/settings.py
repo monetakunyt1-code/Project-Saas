@@ -6,8 +6,8 @@ from pathlib import Path
 
 class Settings:
     APP_NAME = "DocuRapi"
-    APP_VERSION = "0.3.0-backend-refactor"
-    APP_DESCRIPTION = "Backend modular untuk analisis dan perapihan dokumen akademik."
+    APP_VERSION = "0.4.0-manual-qris-whatsapp"
+    APP_DESCRIPTION = "Backend modular untuk preview dokumen, pembayaran QRIS manual, dan approval WhatsApp."
 
     BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -30,7 +30,17 @@ class Settings:
     DEFAULT_HISTORY_LIMIT = 25
     MAX_HISTORY_LIMIT = 100
 
-    PAYMENT_MODE = os.getenv("DOCURAPI_PAYMENT_MODE", "simulation")
+    PAYMENT_MODE = os.getenv("DOCURAPI_PAYMENT_MODE", "manual_qris_whatsapp")
+
+    PUBLIC_BASE_URL = os.getenv("DOCURAPI_PUBLIC_BASE_URL", "http://127.0.0.1:8000")
+    MERCHANT_NAME = os.getenv("DOCURAPI_MERCHANT_NAME", "DocuRapi Merchant")
+    ADMIN_WHATSAPP = os.getenv("DOCURAPI_ADMIN_WHATSAPP", "")
+    ADMIN_APPROVAL_SECRET = os.getenv("DOCURAPI_ADMIN_APPROVAL_SECRET", "dev-admin-secret-change-me")
+
+    QRIS_STATIC_IMAGE_URL = os.getenv(
+        "DOCURAPI_QRIS_STATIC_IMAGE_URL",
+        "/static/payment/qris-shopee.png",
+    )
 
     CORS_ALLOW_ORIGINS = [
         origin.strip()

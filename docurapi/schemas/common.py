@@ -37,7 +37,22 @@ class PaymentCheckoutResponse(BaseModel):
     payment_status: str
     amount: int
     message: str
+    qris_type: str | None = None
+    merchant_name: str | None = None
+    qris_static_image_url: str | None = None
+    payment_instruction: list[str] | None = None
+    confirm_manual_url: str | None = None
     simulate_payment_url: str | None = None
+
+
+class ManualPaymentConfirmResponse(BaseModel):
+    success: bool
+    job_id: str
+    payment_id: str | None = None
+    payment_status: str
+    amount: int
+    message: str
+    admin_whatsapp_url: str | None = None
 
 
 class PaymentSuccessResponse(BaseModel):

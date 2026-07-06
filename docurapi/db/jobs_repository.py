@@ -45,12 +45,7 @@ def create_job(
         connection.commit()
 
 
-def complete_job(
-    job_id: str,
-    output_name: str,
-    output_path: str,
-    report_path: str,
-) -> None:
+def complete_job(job_id: str, output_name: str, output_path: str, report_path: str) -> None:
     with connect() as connection:
         connection.execute(
             """
@@ -59,14 +54,7 @@ def complete_job(
                 report_path = ?, error_message = NULL, updated_at = ?
             WHERE job_id = ?
             """,
-            (
-                "completed",
-                output_name,
-                output_path,
-                report_path,
-                utc_now(),
-                job_id,
-            ),
+            ("completed", output_name, output_path, report_path, utc_now(), job_id),
         )
         connection.commit()
 
@@ -79,31 +67,51 @@ def fail_job(job_id: str, error_message: str) -> None:
             SET status = ?, error_message = ?, updated_at = ?
             WHERE job_id = ?
             """,
-            (
-                "failed",
-                error_message[:2000],
-                utc_now(),
-                job_id,
-            ),
+            ("failed", error_message[:2000], utc_now(), job_id),
         )
         connection.commit()
 
 
 def mark_job_paid(job_id: str, payment_reference: str) -> None:
+    timestamp = utc_now()
+
     with connect() as connection:
         connection.execute(
             """
             UPDATE jobs
-            SET payment_status = ?, payment_reference = ?, paid_at = ?, updated_at = ?
+            SET payment_status = ?, payment_reference = ?, paid_at = ?,
+                rejected_at = NULL, rejection_reason = NULL, updated_at = ?
             WHERE job_id = ?
             """,
-            (
-                "paid",
-                payment_reference,
-                utc_now(),
-                utc_now(),
-                job_id,
-            ),
+            ("paid", payment_reference, timestamp, timestamp, job_id),
+        )
+        connection.commit()
+
+
+def mark_job_pending_verification(job_id: str, payment_reference: str | None = None) -> None:
+    with connect() as connection:
+        connection.execute(
+            """
+            UPDATE jobs
+            SET payment_status = ?, payment_reference = COALESCE(?, payment_reference), updated_at = ?
+            WHERE job_id = ?
+            """,
+            ("pending_verification", payment_reference, utc_now(), job_id),
+        )
+        connection.commit()
+
+
+def mark_job_rejected(job_id: str, reason: str = "Pembayaran ditolak admin.") -> None:
+    timestamp = utc_now()
+
+    with connect() as connection:
+        connection.execute(
+            """
+            UPDATE jobs
+            SET payment_status = ?, rejected_at = ?, rejection_reason = ?, updated_at = ?
+            WHERE job_id = ?
+            """,
+            ("rejected", timestamp, reason[:1000], timestamp, job_id),
         )
         connection.commit()
 
@@ -135,6 +143,27 @@ def list_jobs(limit: int = settings.DEFAULT_HISTORY_LIMIT) -> list[dict[str, Any
     return [dict(row) for row in rows]
 
 
+def list_jobs_by_payment_status(
+    payment_status: str,
+    limit: int = settings.DEFAULT_HISTORY_LIMIT,
+) -> list[dict[str, Any]]:
+    safe_limit = max(1, min(int(limit), settings.MAX_HISTORY_LIMIT))
+
+    with connect() as connection:
+        rows = connection.execute(
+            """
+            SELECT *
+            FROM jobs
+            WHERE payment_status = ?
+            ORDER BY updated_at DESC
+            LIMIT ?
+            """,
+            (payment_status, safe_limit),
+        ).fetchall()
+
+    return [dict(row) for row in rows]
+
+
 def delete_job(job_id: str) -> dict[str, Any] | None:
     job = get_job(job_id)
 
@@ -142,10 +171,7 @@ def delete_job(job_id: str) -> dict[str, Any] | None:
         return None
 
     with connect() as connection:
-        connection.execute(
-            "DELETE FROM jobs WHERE job_id = ?",
-            (job_id,),
-        )
+        connection.execute("DELETE FROM jobs WHERE job_id = ?", (job_id,))
         connection.commit()
 
     return job

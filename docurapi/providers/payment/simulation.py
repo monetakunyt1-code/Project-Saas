@@ -7,7 +7,7 @@ from docurapi.db.jobs_repository import mark_job_paid
 from docurapi.db.payments_repository import (
     create_payment_record,
     get_latest_payment_for_job,
-    mark_latest_payment_paid_for_job,
+    update_latest_payment_for_job,
 )
 
 
@@ -34,66 +34,58 @@ class SimulationPaymentProvider:
 
         latest_payment = get_latest_payment_for_job(job_id)
 
-        if latest_payment and latest_payment["status"] == "pending":
-            payment = latest_payment
-        else:
-            payment = create_payment_record(
+        if not latest_payment or latest_payment["status"] != "pending":
+            latest_payment = create_payment_record(
                 job_id=job_id,
                 provider=self.provider_name,
                 amount=amount,
                 status="pending",
                 checkout_url=f"/api/payments/{job_id}/checkout?token={token}",
-                raw_payload={
-                    "mode": "simulation",
-                    "job_id": job_id,
-                    "amount": amount,
-                },
+                raw_payload={"mode": "simulation"},
             )
 
         return {
             "success": True,
             "job_id": job_id,
-            "payment_id": payment["payment_id"],
+            "payment_id": latest_payment["payment_id"],
             "provider": self.provider_name,
             "payment_status": "unpaid",
             "amount": amount,
-            "message": "Mode development: checkout masih simulasi. Endpoint ini nanti dapat diganti dengan payment gateway.",
+            "message": "Mode development: checkout masih simulasi.",
             "simulate_payment_url": f"/api/payments/{job_id}/simulate-paid?token={token}",
         }
 
+    def confirm_manual_payment(
+        self,
+        job: dict[str, Any],
+        token: str,
+        payer_name: str | None = None,
+        note: str | None = None,
+    ) -> dict[str, Any]:
+        return self.simulate_paid(job, token)
+
     def simulate_paid(self, job: dict[str, Any], token: str) -> dict[str, Any]:
         job_id = job["job_id"]
+        payment_reference = f"DEV-{secrets.token_hex(8).upper()}"
 
-        if job.get("payment_status", "unpaid") == "paid":
-            payment_reference = job.get("payment_reference") or "already-paid"
-        else:
-            payment_reference = f"DEV-{secrets.token_hex(8).upper()}"
-
-            latest_payment = get_latest_payment_for_job(job_id)
-
-            if not latest_payment:
-                create_payment_record(
-                    job_id=job_id,
-                    provider=self.provider_name,
-                    amount=job.get("amount", 0),
-                    status="pending",
-                    checkout_url=f"/api/payments/{job_id}/checkout?token={token}",
-                    raw_payload={
-                        "mode": "simulation-auto-created",
-                        "job_id": job_id,
-                    },
-                )
-
-            mark_latest_payment_paid_for_job(
+        if not get_latest_payment_for_job(job_id):
+            create_payment_record(
                 job_id=job_id,
-                external_reference=payment_reference,
-                raw_payload={
-                    "mode": "simulation",
-                    "event": "simulate-paid",
-                    "payment_reference": payment_reference,
-                },
+                provider=self.provider_name,
+                amount=job.get("amount", 0),
+                status="pending",
+                checkout_url=f"/api/payments/{job_id}/checkout?token={token}",
+                raw_payload={"mode": "simulation-auto-created"},
             )
-            mark_job_paid(job_id, payment_reference)
+
+        update_latest_payment_for_job(
+            job_id=job_id,
+            status="paid",
+            external_reference=payment_reference,
+            raw_payload={"mode": "simulation", "event": "simulate-paid"},
+        )
+
+        mark_job_paid(job_id, payment_reference)
 
         return {
             "success": True,

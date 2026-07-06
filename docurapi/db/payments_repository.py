@@ -44,7 +44,12 @@ def create_payment_record(
         )
         connection.commit()
 
-    return get_payment(payment_id)
+    payment = get_payment(payment_id)
+
+    if not payment:
+        raise RuntimeError("Payment record gagal dibuat.")
+
+    return payment
 
 
 def get_payment(payment_id: str) -> dict[str, Any] | None:
@@ -88,72 +93,46 @@ def list_payments_for_job(job_id: str) -> list[dict[str, Any]]:
     return [dict(row) for row in rows]
 
 
-def mark_payment_paid(
-    payment_id: str,
-    external_reference: str,
-    raw_payload: dict[str, Any] | None = None,
-) -> dict[str, Any] | None:
-    timestamp = utc_now()
-
-    with connect() as connection:
-        connection.execute(
-            """
-            UPDATE payments
-            SET status = ?, external_reference = ?, raw_payload = ?,
-                paid_at = ?, updated_at = ?
-            WHERE payment_id = ?
-            """,
-            (
-                "paid",
-                external_reference,
-                json.dumps(raw_payload or {}, ensure_ascii=False),
-                timestamp,
-                timestamp,
-                payment_id,
-            ),
-        )
-        connection.commit()
-
-    return get_payment(payment_id)
-
-
-def mark_latest_payment_paid_for_job(
+def update_latest_payment_for_job(
     job_id: str,
-    external_reference: str,
+    status: str,
+    external_reference: str | None = None,
     raw_payload: dict[str, Any] | None = None,
+    rejection_reason: str | None = None,
 ) -> dict[str, Any] | None:
     payment = get_latest_payment_for_job(job_id)
 
     if not payment:
         return None
 
-    return mark_payment_paid(
-        payment_id=payment["payment_id"],
-        external_reference=external_reference,
-        raw_payload=raw_payload,
-    )
-
-
-def mark_payment_failed(
-    payment_id: str,
-    raw_payload: dict[str, Any] | None = None,
-) -> dict[str, Any] | None:
     timestamp = utc_now()
+    paid_at = timestamp if status == "paid" else payment.get("paid_at")
+    rejected_at = timestamp if status == "rejected" else payment.get("rejected_at")
 
     with connect() as connection:
         connection.execute(
             """
             UPDATE payments
-            SET status = ?, raw_payload = ?, updated_at = ?
+            SET status = ?,
+                external_reference = COALESCE(?, external_reference),
+                raw_payload = ?,
+                paid_at = ?,
+                rejected_at = ?,
+                rejection_reason = COALESCE(?, rejection_reason),
+                updated_at = ?
             WHERE payment_id = ?
             """,
             (
-                "failed",
+                status,
+                external_reference,
                 json.dumps(raw_payload or {}, ensure_ascii=False),
+                paid_at,
+                rejected_at,
+                rejection_reason,
                 timestamp,
-                payment_id,
+                payment["payment_id"],
             ),
         )
         connection.commit()
 
-    return get_payment(payment_id)
+    return get_payment(payment["payment_id"])

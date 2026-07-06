@@ -10,7 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 from docurapi.core.logging_config import logger
 from docurapi.core.settings import settings
 from docurapi.db.connection import initialize_database
-from docurapi.routers import health, jobs, payments, processing, templates
+from docurapi.routers import admin_payments, health, jobs, payments, processing, templates
 
 
 @asynccontextmanager
@@ -57,7 +57,7 @@ def create_app() -> FastAPI:
                 </head>
                 <body style="font-family: Arial; max-width: 720px; margin: 40px auto;">
                     <h1>DocuRapi</h1>
-                    <p>Backend modular berhasil berjalan.</p>
+                    <p>Backend manual QRIS + WhatsApp approval berhasil berjalan.</p>
                     <p>Health check: <a href="/api/health">/api/health</a></p>
                 </body>
             </html>
@@ -69,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(jobs.router)
     app.include_router(templates.router)
     app.include_router(payments.router)
+    app.include_router(admin_payments.router)
 
     return app
 
