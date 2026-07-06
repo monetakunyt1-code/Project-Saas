@@ -39,3 +39,7 @@ Thumbs.db
 storage/payment_proofs/
 backup_payment_proof_upload_*/
 add_payment_proof_upload.sh
+.env.production
+storage/docurapi.db
+storage/docurapi.db-*
+cleanup_*.json
