@@ -19,6 +19,7 @@ from docurapi.services.file_service import safe_filename, save_upload, validate_
 from docurapi.services.journal_service import create_journal_draft
 from docurapi.services.pricing_service import get_processing_price
 from docurapi.services.invoice_service import calculate_invoice_expiry, generate_unique_payment_amount
+from docurapi.services.audit_service import log_event
 
 
 
@@ -135,6 +136,20 @@ async def process_uploaded_document(
         input_path.unlink(missing_ok=True)
 
         logger.info("Job %s selesai. Mode=%s Payment=unpaid", job_id, normalized_mode)
+
+        log_event(
+            event_type="document_processed",
+            actor="guest",
+            job_id=job_id,
+            message="Dokumen berhasil diproses dan menunggu pembayaran.",
+            metadata={
+                "mode": normalized_mode,
+                "preset": preset,
+                "amount": amount,
+                "base_amount": base_amount,
+                "unique_code": unique_code,
+            },
+        )
 
         return {
             "success": True,

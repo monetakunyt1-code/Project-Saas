@@ -111,6 +111,21 @@ def initialize_database() -> None:
         add_column_if_missing(connection, "payments", "proof_path", "TEXT")
         add_column_if_missing(connection, "payments", "proof_content_type", "TEXT")
 
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                audit_id TEXT PRIMARY KEY,
+                event_type TEXT NOT NULL,
+                actor TEXT NOT NULL,
+                job_id TEXT,
+                payment_id TEXT,
+                message TEXT NOT NULL,
+                metadata TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
         connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)")
         connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_payment_status ON jobs(payment_status)")
         connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_invoice_expires_at ON jobs(invoice_expires_at)")
@@ -118,5 +133,8 @@ def initialize_database() -> None:
         connection.execute("CREATE INDEX IF NOT EXISTS idx_payments_job_id ON payments(job_id)")
         connection.execute("CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)")
         connection.execute("CREATE INDEX IF NOT EXISTS idx_payments_external_reference ON payments(external_reference)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_audit_logs_event_type ON audit_logs(event_type)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_audit_logs_job_id ON audit_logs(job_id)")
 
         connection.commit()

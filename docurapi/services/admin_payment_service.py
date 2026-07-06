@@ -13,6 +13,7 @@ from docurapi.db.jobs_repository import (
     mark_job_paid,
     mark_job_rejected,
 )
+from docurapi.services.audit_service import log_event
 from docurapi.db.payments_repository import (
     get_latest_payment_for_job,
     list_payments_for_job,
@@ -81,6 +82,14 @@ def approve_payment(
 
     mark_job_paid(job_id, payment_reference)
 
+    log_event(
+        event_type="payment_approved",
+        actor="admin",
+        job_id=job_id,
+        message="Pembayaran manual QRIS disetujui admin.",
+        metadata={"payment_reference": payment_reference},
+    )
+
     return {
         "success": True,
         "job_id": job_id,
@@ -115,6 +124,14 @@ def reject_payment(
     )
 
     mark_job_rejected(job_id, reason)
+
+    log_event(
+        event_type="payment_rejected",
+        actor="admin",
+        job_id=job_id,
+        message="Pembayaran manual QRIS ditolak admin.",
+        metadata={"reason": reason},
+    )
 
     return {
         "success": True,

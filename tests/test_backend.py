@@ -5,11 +5,13 @@ from docurapi.core.security import (
     verify_admin_action_token,
 )
 from docurapi.core.settings import settings
+from docurapi.db.connection import initialize_database
 from docurapi.main import app
+from docurapi.services.invoice_service import build_invoice_fields
 from docurapi.services.payment_service import get_payment_provider
 from docurapi.services.pricing_service import get_available_prices, get_processing_price
-from docurapi.services.invoice_service import build_invoice_fields
-from docurapi.services.processing_service import generate_unique_payment_amount
+
+initialize_database()
 
 client = TestClient(app)
 
@@ -45,6 +47,38 @@ def test_payment_status_unknown_job():
 def test_admin_pending_requires_valid_secret():
     response = client.get("/api/admin/payments/pending?secret=wrong")
     assert response.status_code == 403
+
+
+def test_admin_dashboard_requires_valid_secret():
+    response = client.get("/api/admin/dashboard/overview?secret=wrong")
+    assert response.status_code == 403
+
+
+def test_admin_dashboard_overview_valid_secret():
+    response = client.get(
+        f"/api/admin/dashboard/overview?secret={settings.ADMIN_APPROVAL_SECRET}"
+    )
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+    assert "jobs" in response.json()
+    assert "payments" in response.json()
+
+
+def test_admin_audit_logs_valid_secret():
+    response = client.get(
+        f"/api/admin/dashboard/audit-logs?secret={settings.ADMIN_APPROVAL_SECRET}"
+    )
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+    assert "audit_logs" in response.json()
+
+
+def test_admin_expire_overdue_valid_secret():
+    response = client.post(
+        f"/api/admin/dashboard/invoices/expire-overdue?secret={settings.ADMIN_APPROVAL_SECRET}"
+    )
+    assert response.status_code == 200
+    assert response.json()["success"] is True
 
 
 def test_admin_proof_unknown_without_access():
@@ -103,15 +137,6 @@ def test_admin_view_token_validation():
 
 def test_unique_payment_amount_generation():
     base_amount = 12000
-    amount, unique_code = generate_unique_payment_amount(base_amount)
-
-    assert amount == base_amount + unique_code
-    assert unique_code >= settings.UNIQUE_CODE_MIN
-    assert unique_code <= settings.UNIQUE_CODE_MAX
-
-
-def test_invoice_fields_builder():
-    base_amount = 12000
     fields = build_invoice_fields(base_amount)
 
     assert fields["amount"] == fields["base_amount"] + fields["unique_code"]
@@ -123,7 +148,6 @@ def test_invoice_fields_builder():
 
 def test_pricing_endpoint():
     response = client.get("/api/pricing")
-
     assert response.status_code == 200
     assert response.json()["success"] is True
     assert response.json()["currency"] == "IDR"
@@ -132,7 +156,6 @@ def test_pricing_endpoint():
 
 def test_pricing_service_values():
     prices = get_available_prices()
-
     assert prices["analyze"] == settings.PRICE_ANALYZE
     assert prices["format"] == settings.PRICE_FORMAT
     assert prices["journal"] == settings.PRICE_JOURNAL
