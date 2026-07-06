@@ -43,3 +43,4 @@ add_payment_proof_upload.sh
 storage/docurapi.db
 storage/docurapi.db-*
 cleanup_*.json
+legacy_ui_backup/
