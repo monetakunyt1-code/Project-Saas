@@ -80,6 +80,7 @@ uploadForm.addEventListener("submit", async (event) => {
 
     resultCard.classList.remove("hidden");
     paymentCard.classList.remove("hidden");
+    saveLastJob(data, currentToken);
     showStatus(statusBox, "Dokumen berhasil diproses. Silakan cek invoice dan lakukan pembayaran.");
 
   } catch (error) {
@@ -133,3 +134,81 @@ confirmForm.addEventListener("submit", async (event) => {
     showStatus(confirmResult, error.message, true);
   }
 });
+
+
+function saveLastJob(data, token) {
+  const lastJob = {
+    job_id: data.job_id,
+    token: token,
+    payment_status: data.payment_status,
+    amount: data.amount,
+    base_amount: data.base_amount,
+    unique_code: data.unique_code,
+    invoice_expires_at: data.invoice_expires_at,
+    saved_at: new Date().toISOString()
+  };
+
+  localStorage.setItem("docurapi_last_job", JSON.stringify(lastJob));
+  renderLastJob();
+}
+
+function getLastJob() {
+  try {
+    return JSON.parse(localStorage.getItem("docurapi_last_job") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function clearLastJob() {
+  localStorage.removeItem("docurapi_last_job");
+  renderLastJob();
+}
+
+function renderLastJob() {
+  const lastJob = getLastJob();
+  let card = document.getElementById("lastJobCard");
+
+  if (!card) {
+    card = document.createElement("section");
+    card.id = "lastJobCard";
+    card.className = "card";
+    const firstCard = document.querySelector(".card");
+    if (firstCard && firstCard.parentNode) {
+      firstCard.parentNode.insertBefore(card, firstCard.nextSibling);
+    } else {
+      document.querySelector(".page").appendChild(card);
+    }
+  }
+
+  if (!lastJob) {
+    card.classList.add("hidden");
+    card.innerHTML = "";
+    return;
+  }
+
+  card.classList.remove("hidden");
+  card.innerHTML = `
+    <h2>Dokumen Terakhir</h2>
+    <div class="meta">
+      <strong>Job ID:</strong> ${lastJob.job_id}<br>
+      <strong>Status terakhir:</strong> ${lastJob.payment_status || "-"}<br>
+      <strong>Total bayar:</strong> ${rupiah(lastJob.amount)}<br>
+      <strong>Kode unik:</strong> ${rupiah(lastJob.unique_code)}<br>
+      <strong>Expired:</strong> ${lastJob.invoice_expires_at || "-"}<br>
+      <strong>Disimpan:</strong> ${lastJob.saved_at || "-"}
+    </div>
+    <div class="actions">
+      <a class="button" href="/static/app/status.html?job_id=${lastJob.job_id}&token=${lastJob.token}" target="_blank">Cek Status</a>
+      <a class="button" href="/api/payments/${lastJob.job_id}/invoice?token=${lastJob.token}" target="_blank">Lihat Invoice</a>
+      <button type="button" id="clearLastJobBtn">Hapus Riwayat Lokal</button>
+    </div>
+  `;
+
+  const clearButton = document.getElementById("clearLastJobBtn");
+  if (clearButton) {
+    clearButton.addEventListener("click", clearLastJob);
+  }
+}
+
+renderLastJob();
