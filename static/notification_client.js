@@ -1,1 +1,1 @@
-console.info("Legacy notification_client disabled for DocuRapi MVP.");
+console.info("Legacy notification client disabled.");
