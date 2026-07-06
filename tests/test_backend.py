@@ -160,3 +160,21 @@ def test_pricing_service_values():
     assert prices["format"] == settings.PRICE_FORMAT
     assert prices["journal"] == settings.PRICE_JOURNAL
     assert get_processing_price("format") == settings.PRICE_FORMAT
+
+
+def test_admin_cleanup_requires_valid_secret():
+    response = client.post("/api/admin/cleanup/run?secret=wrong&dry_run=true")
+    assert response.status_code == 403
+
+
+def test_admin_cleanup_dry_run_valid_secret():
+    response = client.post(
+        f"/api/admin/cleanup/run?secret={settings.ADMIN_APPROVAL_SECRET}&dry_run=true"
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert data["dry_run"] is True
+    assert "summary" in data
+    assert "retention_policy" in data
