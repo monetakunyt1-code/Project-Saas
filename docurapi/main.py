@@ -10,7 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 from docurapi.core.logging_config import logger
 from docurapi.core.settings import settings
 from docurapi.db.connection import initialize_database
-from docurapi.routers import admin_system, admin_cleanup, admin_dashboard, admin_payments, health, jobs, payments, pricing, processing, templates
+from docurapi.routers import frontend, admin_system, admin_cleanup, admin_dashboard, admin_payments, health, jobs, payments, pricing, processing, templates
 
 
 @asynccontextmanager
@@ -75,6 +75,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_cleanup.router)
     app.include_router(admin_system.router)
 
+    app.include_router(frontend.router)
     return app
 
 

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DocuRapi</title>
+  <link rel="stylesheet" href="/static/app/styles.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">DocuRapi</p>
+      <h1>Rapikan dokumen akademik tanpa login.</h1>
+      <p class="subtitle">
+        Upload file .docx, lihat preview, bayar via QRIS, lalu download hasil setelah pembayaran disetujui admin.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Upload Dokumen</h2>
+
+      <form id="uploadForm">
+        <label>
+          File DOCX
+          <input type="file" name="file" accept=".docx" required>
+        </label>
+
+        <label>
+          Mode
+          <select name="mode">
+            <option value="format">Format dokumen</option>
+            <option value="analyze">Analisis dokumen</option>
+            <option value="journal">Draft jurnal</option>
+          </select>
+        </label>
+
+        <label>
+          Preset
+          <select name="preset">
+            <option value="skripsi">Skripsi</option>
+            <option value="makalah">Makalah</option>
+            <option value="jurnal">Jurnal</option>
+            <option value="umum">Umum</option>
+          </select>
+        </label>
+
+        <button type="submit">Proses Dokumen</button>
+      </form>
+
+      <div id="status" class="status hidden"></div>
+    </section>
+
+    <section id="resultCard" class="card hidden">
+      <h2>Hasil Proses</h2>
+      <div id="result"></div>
+    </section>
+
+    <section id="paymentCard" class="card hidden">
+      <h2>Konfirmasi Pembayaran</h2>
+
+      <form id="confirmForm">
+        <label>
+          Nama pembayar
+          <input type="text" name="payer_name" placeholder="Nama kamu">
+        </label>
+
+        <label>
+          Catatan
+          <textarea name="note" placeholder="Contoh: sudah bayar via QRIS Shopee"></textarea>
+        </label>
+
+        <label>
+          Bukti pembayaran
+          <input type="file" name="proof_file" accept=".jpg,.jpeg,.png,.webp,.pdf">
+        </label>
+
+        <button type="submit">Kirim Konfirmasi</button>
+      </form>
+
+      <div id="confirmResult" class="status hidden"></div>
+    </section>
+  </main>
+
+  <script src="/static/app/app.js"></script>
+</body>
+</html>
