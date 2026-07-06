@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin DocuRapi</title>
+  <link rel="stylesheet" href="/static/app/styles.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">DocuRapi Admin</p>
+      <h1>Admin Dashboard</h1>
+      <p class="subtitle">
+        Panel awal untuk cek sistem, melihat pembayaran pending, approve/reject pembayaran, dan menjalankan cleanup.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Admin Secret</h2>
+      <label>
+        X-Admin-Secret
+        <input id="adminSecret" type="password" placeholder="Masukkan admin secret">
+      </label>
+      <div class="actions">
+        <button id="saveSecretBtn" type="button">Simpan Secret</button>
+        <button id="loadAllBtn" type="button">Load Dashboard</button>
+      </div>
+      <div id="authStatus" class="status hidden"></div>
+    </section>
+
+    <section class="card">
+      <h2>System Readiness</h2>
+      <div id="readinessBox" class="meta">Belum dimuat.</div>
+    </section>
+
+    <section class="card">
+      <h2>Overview</h2>
+      <div id="overviewBox" class="meta">Belum dimuat.</div>
+    </section>
+
+    <section class="card">
+      <h2>Pending Payments</h2>
+      <div class="actions">
+        <button id="refreshPendingBtn" type="button">Refresh Pending</button>
+      </div>
+      <div id="pendingBox">Belum dimuat.</div>
+    </section>
+
+    <section class="card">
+      <h2>Cleanup</h2>
+      <p class="subtitle">
+        Gunakan dry-run dulu untuk melihat kandidat cleanup tanpa menghapus file.
+      </p>
+      <div class="actions">
+        <button id="cleanupDryRunBtn" type="button">Cleanup Dry-Run</button>
+      </div>
+      <div id="cleanupBox" class="meta">Belum dijalankan.</div>
+    </section>
+  </main>
+
+  <script src="/static/app/admin.js"></script>
+</body>
+</html>

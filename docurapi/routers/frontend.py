@@ -11,3 +11,8 @@ router = APIRouter(tags=["frontend"])
 @router.get("/")
 def frontend_home():
     return FileResponse(settings.BASE_DIR / "static" / "app" / "index.html")
+
+
+@router.get("/admin")
+def frontend_admin():
+    return FileResponse(settings.BASE_DIR / "static" / "app" / "admin.html")
