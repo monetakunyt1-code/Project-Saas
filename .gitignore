@@ -1,7 +1,6 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -16,7 +15,7 @@ env/
 .env.local
 .env.*.local
 
-# Storage runtime
+# Runtime storage
 storage/uploads/
 storage/outputs/
 storage/reports/
@@ -26,11 +25,12 @@ storage/*.db-*
 logs/
 *.log
 
-# Backup/temp
+# Backup and temporary scripts
 backup_*/
 *_backup_*
 fix_codespaces.sh
 refactor_backend.sh
+add_guest_payment_flow.sh
 
 # OS/editor
 .DS_Store
