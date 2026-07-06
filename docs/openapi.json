@@ -8,8 +8,11 @@
   "paths": {
     "/": {
       "get": {
-        "summary": "Home",
-        "operationId": "home__get",
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Frontend Home",
+        "operationId": "frontend_home__get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1957,6 +1960,25 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Frontend Admin",
+        "operationId": "frontend_admin_admin_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
