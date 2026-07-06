@@ -178,3 +178,34 @@ def test_admin_cleanup_dry_run_valid_secret():
     assert data["dry_run"] is True
     assert "summary" in data
     assert "retention_policy" in data
+
+
+def test_admin_dashboard_overview_with_header_secret():
+    response = client.get(
+        "/api/admin/dashboard/overview",
+        headers={"X-Admin-Secret": settings.ADMIN_APPROVAL_SECRET},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+
+
+def test_admin_cleanup_with_header_secret():
+    response = client.post(
+        "/api/admin/cleanup/run?dry_run=true",
+        headers={"X-Admin-Secret": settings.ADMIN_APPROVAL_SECRET},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+    assert response.json()["dry_run"] is True
+
+
+def test_admin_payment_pending_with_header_secret():
+    response = client.get(
+        "/api/admin/payments/pending",
+        headers={"X-Admin-Secret": settings.ADMIN_APPROVAL_SECRET},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["success"] is True

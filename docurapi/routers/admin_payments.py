@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from html import escape
 
-from fastapi import APIRouter, Form, Query
+from fastapi import APIRouter, Depends, Form, Query
 from fastapi.responses import HTMLResponse
 
+from docurapi.routers.admin_auth import get_admin_secret, get_optional_admin_secret
 from docurapi.services.admin_payment_service import (
     approve_payment,
     get_admin_payment_detail,
@@ -102,21 +103,21 @@ def render_admin_result_page(
 
 @router.get("/pending")
 def pending_payments(
-    secret: str = Query(...),
+    admin_secret: str = Depends(get_admin_secret),
     limit: int = Query(25, ge=1, le=100),
 ):
-    return list_pending_payments(secret=secret, limit=limit)
+    return list_pending_payments(secret=admin_secret, limit=limit)
 
 
 @router.get("/{job_id}")
 def payment_detail(
     job_id: str,
-    secret: str | None = Query(None),
+    admin_secret: str | None = Depends(get_optional_admin_secret),
     admin_token: str | None = Query(None),
 ):
     return get_admin_payment_detail(
         job_id=job_id,
-        secret=secret,
+        secret=admin_secret,
         admin_token=admin_token,
     )
 
@@ -124,12 +125,12 @@ def payment_detail(
 @router.get("/{job_id}/proof")
 def payment_proof(
     job_id: str,
-    secret: str | None = Query(None),
+    admin_secret: str | None = Depends(get_optional_admin_secret),
     admin_token: str | None = Query(None),
 ):
     return get_payment_proof_response(
         job_id=job_id,
-        secret=secret,
+        secret=admin_secret,
         admin_token=admin_token,
     )
 
@@ -137,10 +138,10 @@ def payment_proof(
 @router.get("/{job_id}/approve")
 def approve_payment_by_link(
     job_id: str,
-    secret: str | None = Query(None),
+    admin_secret: str | None = Depends(get_optional_admin_secret),
     admin_token: str | None = Query(None),
 ):
-    result = approve_payment(job_id=job_id, secret=secret, admin_token=admin_token)
+    result = approve_payment(job_id=job_id, secret=admin_secret, admin_token=admin_token)
 
     extra = f"""
       <div class="meta">
@@ -163,22 +164,22 @@ def approve_payment_by_link(
 @router.post("/{job_id}/approve")
 def approve_payment_by_post(
     job_id: str,
-    secret: str | None = Query(None),
+    admin_secret: str | None = Depends(get_optional_admin_secret),
     admin_token: str | None = Query(None),
 ):
-    return approve_payment(job_id=job_id, secret=secret, admin_token=admin_token)
+    return approve_payment(job_id=job_id, secret=admin_secret, admin_token=admin_token)
 
 
 @router.get("/{job_id}/reject")
 def reject_payment_by_link(
     job_id: str,
-    secret: str | None = Query(None),
+    admin_secret: str | None = Depends(get_optional_admin_secret),
     admin_token: str | None = Query(None),
     reason: str = Query("Pembayaran tidak ditemukan atau tidak sesuai."),
 ):
     result = reject_payment(
         job_id=job_id,
-        secret=secret,
+        secret=admin_secret,
         admin_token=admin_token,
         reason=reason,
     )
@@ -202,13 +203,13 @@ def reject_payment_by_link(
 @router.post("/{job_id}/reject")
 def reject_payment_by_post(
     job_id: str,
-    secret: str | None = Query(None),
+    admin_secret: str | None = Depends(get_optional_admin_secret),
     admin_token: str | None = Query(None),
     reason: str = Form("Pembayaran tidak ditemukan atau tidak sesuai."),
 ):
     return reject_payment(
         job_id=job_id,
-        secret=secret,
+        secret=admin_secret,
         admin_token=admin_token,
         reason=reason,
     )
