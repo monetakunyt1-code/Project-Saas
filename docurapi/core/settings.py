@@ -30,6 +30,8 @@ class Settings:
     DEFAULT_HISTORY_LIMIT = 25
     MAX_HISTORY_LIMIT = 100
 
+    PAYMENT_MODE = os.getenv("DOCURAPI_PAYMENT_MODE", "simulation")
+
     CORS_ALLOW_ORIGINS = [
         origin.strip()
         for origin in os.getenv("DOCURAPI_CORS_ORIGINS", "*").split(",")

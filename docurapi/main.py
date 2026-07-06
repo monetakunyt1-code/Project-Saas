@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -11,11 +13,20 @@ from docurapi.db.connection import initialize_database
 from docurapi.routers import health, jobs, payments, processing, templates
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_database()
+    logger.info("%s started. Version=%s", settings.APP_NAME, settings.APP_VERSION)
+    yield
+    logger.info("%s stopped.", settings.APP_NAME)
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
         description=settings.APP_DESCRIPTION,
+        lifespan=lifespan,
     )
 
     app.add_middleware(
@@ -30,11 +41,6 @@ def create_app() -> FastAPI:
 
     if static_path.exists():
         app.mount("/static", StaticFiles(directory=static_path), name="static")
-
-    @app.on_event("startup")
-    def startup_event() -> None:
-        initialize_database()
-        logger.info("%s started. Version=%s", settings.APP_NAME, settings.APP_VERSION)
 
     @app.get("/")
     def home():
