@@ -6,6 +6,7 @@ from fastapi import HTTPException
 
 from docurapi.core.settings import settings
 from docurapi.db.jobs_repository import get_job
+from docurapi.db.payments_repository import list_payments_for_job
 from docurapi.providers.payment.midtrans import MidtransPaymentProvider
 from docurapi.providers.payment.simulation import SimulationPaymentProvider
 from docurapi.providers.payment.xendit import XenditPaymentProvider
@@ -67,3 +68,16 @@ def simulate_paid(job_id: str, token: str) -> dict[str, Any]:
     provider = get_payment_provider()
 
     return provider.simulate_paid(job, token)
+
+
+def get_payment_status(job_id: str, token: str) -> dict[str, Any]:
+    job = ensure_payment_access(job_id, token)
+    payments = list_payments_for_job(job_id)
+
+    return {
+        "success": True,
+        "job_id": job_id,
+        "job_payment_status": job.get("payment_status", "unpaid"),
+        "amount": job.get("amount", 0),
+        "payments": payments,
+    }

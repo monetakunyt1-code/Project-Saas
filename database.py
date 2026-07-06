@@ -10,6 +10,15 @@ from docurapi.db.jobs_repository import (
     mark_job_paid,
     remove_job_files,
 )
+from docurapi.db.payments_repository import (
+    create_payment_record,
+    get_latest_payment_for_job,
+    get_payment,
+    list_payments_for_job,
+    mark_latest_payment_paid_for_job,
+    mark_payment_failed,
+    mark_payment_paid,
+)
 from docurapi.db.templates_repository import (
     delete_template,
     get_template,
@@ -31,6 +40,13 @@ __all__ = [
     "delete_job",
     "clear_job_history",
     "remove_job_files",
+    "create_payment_record",
+    "get_latest_payment_for_job",
+    "get_payment",
+    "list_payments_for_job",
+    "mark_latest_payment_paid_for_job",
+    "mark_payment_failed",
+    "mark_payment_paid",
     "register_template",
     "list_templates",
     "get_template",

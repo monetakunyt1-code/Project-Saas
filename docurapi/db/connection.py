@@ -106,6 +106,25 @@ def initialize_database() -> None:
         )
 
         connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS payments (
+                payment_id TEXT PRIMARY KEY,
+                job_id TEXT NOT NULL,
+                provider TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                status TEXT NOT NULL,
+                external_reference TEXT,
+                checkout_url TEXT,
+                raw_payload TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                paid_at TEXT,
+                FOREIGN KEY(job_id) REFERENCES jobs(job_id) ON DELETE CASCADE
+            )
+            """
+        )
+
+        connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)"
         )
 
@@ -115,6 +134,18 @@ def initialize_database() -> None:
 
         connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_templates_created_at ON templates(created_at DESC)"
+        )
+
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_payments_job_id ON payments(job_id)"
+        )
+
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)"
+        )
+
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_payments_external_reference ON payments(external_reference)"
         )
 
         connection.commit()

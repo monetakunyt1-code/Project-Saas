@@ -32,6 +32,8 @@ class ProcessingResponse(BaseModel):
 class PaymentCheckoutResponse(BaseModel):
     success: bool
     job_id: str
+    payment_id: str | None = None
+    provider: str | None = None
     payment_status: str
     amount: int
     message: str
@@ -45,3 +47,11 @@ class PaymentSuccessResponse(BaseModel):
     payment_reference: str
     message: str
     download_url: str
+
+
+class PaymentStatusResponse(BaseModel):
+    success: bool
+    job_id: str
+    job_payment_status: str
+    amount: int
+    payments: list[dict[str, Any]]
