@@ -7,6 +7,7 @@ from docurapi.core.security import (
 from docurapi.core.settings import settings
 from docurapi.main import app
 from docurapi.services.payment_service import get_payment_provider
+from docurapi.services.processing_service import generate_unique_payment_amount
 
 client = TestClient(app)
 
@@ -96,3 +97,12 @@ def test_admin_view_token_validation():
         action="approve",
         token=token,
     )
+
+
+def test_unique_payment_amount_generation():
+    base_amount = 12000
+    amount, unique_code = generate_unique_payment_amount(base_amount)
+
+    assert amount == base_amount + unique_code
+    assert unique_code >= settings.UNIQUE_CODE_MIN
+    assert unique_code <= settings.UNIQUE_CODE_MAX

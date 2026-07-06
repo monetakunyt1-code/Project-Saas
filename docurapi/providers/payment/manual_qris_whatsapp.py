@@ -44,13 +44,18 @@ class ManualQrisWhatsappPaymentProvider:
             "provider": self.provider_name,
             "payment_status": payment_status,
             "amount": amount,
-            "message": "Silakan bayar melalui QRIS statis, lalu klik konfirmasi pembayaran.",
+            "base_amount": job.get("base_amount", amount),
+            "unique_code": job.get("unique_code", 0),
+            "invoice_expires_at": job.get("invoice_expires_at"),
+            "message": "Silakan bayar melalui QRIS statis dengan nominal unik, lalu klik konfirmasi pembayaran.",
             "qris_type": "static",
             "merchant_name": settings.MERCHANT_NAME,
             "qris_static_image_url": settings.QRIS_STATIC_IMAGE_URL,
             "payment_instruction": [
                 "Scan QRIS menggunakan aplikasi pembayaran.",
-                f"Pastikan nominal pembayaran adalah Rp{amount:,}.",
+                f"Bayar sesuai total nominal unik: Rp{amount:,}.",
+                f"Kode unik pembayaran: Rp{job.get('unique_code', 0):,}.",
+                "Jangan membulatkan atau mengurangi nominal agar admin mudah mencocokkan pembayaran.",
                 "Setelah membayar, upload bukti pembayaran dan klik konfirmasi.",
                 "Download akan dibuka setelah admin memverifikasi pembayaran.",
             ],
@@ -153,7 +158,10 @@ class ManualQrisWhatsappPaymentProvider:
             f"File: {job.get('original_name')}\n"
             f"Mode: {job.get('mode')}\n"
             f"Preset: {job.get('preset')}\n"
-            f"Nominal: Rp{job.get('amount', 0):,}\n"
+            f"Harga dasar: Rp{job.get('base_amount', job.get('amount', 0)):,}\n"
+            f"Kode unik: Rp{job.get('unique_code', 0):,}\n"
+            f"Total nominal: Rp{job.get('amount', 0):,}\n"
+            f"Expired: {job.get('invoice_expires_at') or '-'}\n"
             f"Nama pembayar: {payer_name or '-'}\n"
             f"Catatan: {note or '-'}\n"
             f"Bukti upload: {'Ada' if proof_uploaded else 'Tidak ada'}\n\n"

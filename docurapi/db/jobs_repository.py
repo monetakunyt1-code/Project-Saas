@@ -15,6 +15,9 @@ def create_job(
     input_size: int = 0,
     amount: int = 0,
     access_token: str | None = None,
+    base_amount: int = 0,
+    unique_code: int = 0,
+    invoice_expires_at: str | None = None,
 ) -> None:
     timestamp = utc_now()
 
@@ -23,10 +26,11 @@ def create_job(
             """
             INSERT INTO jobs (
                 job_id, original_name, mode, preset, status,
-                input_size, amount, payment_status, access_token,
+                input_size, amount, base_amount, unique_code,
+                invoice_expires_at, payment_status, access_token,
                 created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 job_id,
@@ -36,6 +40,9 @@ def create_job(
                 "processing",
                 input_size,
                 amount,
+                base_amount,
+                unique_code,
+                invoice_expires_at,
                 "unpaid",
                 access_token,
                 timestamp,

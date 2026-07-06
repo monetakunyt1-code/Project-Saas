@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import secrets
 import shutil
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -27,6 +28,20 @@ PRICE_TABLE = {
 
 def get_processing_price(mode: str) -> int:
     return PRICE_TABLE.get(mode, PRICE_TABLE["format"])
+
+
+def generate_unique_payment_amount(base_amount: int) -> tuple[int, int]:
+    unique_code = secrets.randbelow(
+        settings.UNIQUE_CODE_MAX - settings.UNIQUE_CODE_MIN + 1
+    ) + settings.UNIQUE_CODE_MIN
+
+    return base_amount + unique_code, unique_code
+
+
+def calculate_invoice_expiry() -> str:
+    return (
+        datetime.now(timezone.utc) + timedelta(hours=settings.PAYMENT_EXPIRY_HOURS)
+    ).isoformat()
 
 
 def write_report(report_path: Path, payload: dict[str, Any]) -> None:
@@ -55,7 +70,9 @@ async def process_uploaded_document(
     job_id = uuid4().hex
     access_token = secrets.token_urlsafe(32)
     original_name = safe_filename(file.filename or "document.docx")
-    amount = get_processing_price(normalized_mode)
+    base_amount = get_processing_price(normalized_mode)
+    amount, unique_code = generate_unique_payment_amount(base_amount)
+    invoice_expires_at = calculate_invoice_expiry()
 
     input_path = settings.UPLOAD_DIR / f"{job_id}_{original_name}"
 
@@ -80,6 +97,9 @@ async def process_uploaded_document(
             input_size=input_size,
             amount=amount,
             access_token=access_token,
+            base_amount=base_amount,
+            unique_code=unique_code,
+            invoice_expires_at=invoice_expires_at,
         )
 
         analysis_before = analyze_document(input_path)
@@ -103,6 +123,9 @@ async def process_uploaded_document(
             "preset": preset,
             "payment_status": "unpaid",
             "amount": amount,
+            "base_amount": base_amount,
+            "unique_code": unique_code,
+            "invoice_expires_at": invoice_expires_at,
             "analysis_before": analysis_before,
             "processing": processing_result,
             "analysis_after": analysis_after,
@@ -131,6 +154,9 @@ async def process_uploaded_document(
             "download_url": None,
             "payment_status": "unpaid",
             "amount": amount,
+            "base_amount": base_amount,
+            "unique_code": unique_code,
+            "invoice_expires_at": invoice_expires_at,
             "summary": analysis_after["summary"],
         }
 

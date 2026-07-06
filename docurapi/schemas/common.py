@@ -26,6 +26,9 @@ class ProcessingResponse(BaseModel):
     download_url: str | None = None
     payment_status: str
     amount: int
+    base_amount: int | None = None
+    unique_code: int | None = None
+    invoice_expires_at: str | None = None
     summary: dict[str, Any]
 
 
@@ -36,6 +39,9 @@ class PaymentCheckoutResponse(BaseModel):
     provider: str | None = None
     payment_status: str
     amount: int
+    base_amount: int | None = None
+    unique_code: int | None = None
+    invoice_expires_at: str | None = None
     message: str
     qris_type: str | None = None
     merchant_name: str | None = None

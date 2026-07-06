@@ -41,6 +41,9 @@ class Settings:
     MAX_HISTORY_LIMIT = 100
 
     PAYMENT_MODE = os.getenv("DOCURAPI_PAYMENT_MODE", "manual_qris_whatsapp")
+    PAYMENT_EXPIRY_HOURS = int(os.getenv("DOCURAPI_PAYMENT_EXPIRY_HOURS", "24"))
+    UNIQUE_CODE_MIN = int(os.getenv("DOCURAPI_UNIQUE_CODE_MIN", "101"))
+    UNIQUE_CODE_MAX = int(os.getenv("DOCURAPI_UNIQUE_CODE_MAX", "999"))
 
     PUBLIC_BASE_URL = os.getenv("DOCURAPI_PUBLIC_BASE_URL", "http://127.0.0.1:8000")
     MERCHANT_NAME = os.getenv("DOCURAPI_MERCHANT_NAME", "DocuRapi Merchant")
